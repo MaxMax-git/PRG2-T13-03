@@ -8,12 +8,15 @@ using System.Threading.Tasks;
 
 namespace PRG2_T13_03.Classes
 {
-    internal class Airline
+    class Airline
     {
+        // Properties
         public string Name { get; set; } = "";
         public string Code { get; set; } = "";
         public Dictionary<string, Flight> Flights { get; set; } = new Dictionary<string, Flight>();
 
+
+        // Methods
         public bool AddFlight(Flight flight)// PLACEHOLDER
         {
             return Flights.TryAdd(flight.FlightNumber, flight);
@@ -72,6 +75,8 @@ namespace PRG2_T13_03.Classes
             return $"Name: {Name}\tCode: {Code}";
         }
 
+
+        // Constructor
         public Airline() { }
         public Airline(string name, string code)
         {
