@@ -1,4 +1,7 @@
-﻿using System;
+﻿using PRG2_T13_03;
+using PRG2_T13_03.Classes;
+using PRG2_T13_03.Classes.Flights;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
@@ -7,12 +10,15 @@ using System.Threading.Tasks;
 
 namespace PRG2_T13_03.Classes
 {
-    internal class Airline
+    class Airline
     {
+        // Properties
         public string Name { get; set; } = "";
         public string Code { get; set; } = "";
         public Dictionary<string, Flight> Flights { get; set; } = new Dictionary<string, Flight>();
 
+
+        // Methods
         public bool AddFlight(Flight flight)// PLACEHOLDER
         {
             if (Flights.ContainsKey(flight.FlightNumber)) return false;
@@ -35,6 +41,8 @@ namespace PRG2_T13_03.Classes
             return $"Name: {Name}\tCode: {Code}";
         }
 
+
+        // Constructor
         public Airline() { }
         public Airline(string name, string code)
         {
