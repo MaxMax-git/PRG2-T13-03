@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PRG2_T13_03
+namespace PRG2_T13_03.Classes.Flights
 {
     internal class LWTTFlight : Flight
     {
@@ -21,7 +21,8 @@ namespace PRG2_T13_03
         }
 
         public LWTTFlight() { }
-        public LWTTFlight(string flightNumber, string origin, string destination, DateTime expectedTime, string status): 
-            base(flightNumber, origin, destination, expectedTime, status) {}
+        public LWTTFlight(string flightNumber, string origin, string destination, DateTime expectedTime, string status) :
+            base(flightNumber, origin, destination, expectedTime, status)
+        { }
     }
 }

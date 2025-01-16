@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PRG2_T13_03
+namespace PRG2_T13_03.Classes
 {
     internal abstract class Flight
     {

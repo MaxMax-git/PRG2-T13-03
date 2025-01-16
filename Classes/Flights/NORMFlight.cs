@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PRG2_T13_03
+namespace PRG2_T13_03.Classes.Flights
 {
     internal class NORMFlight : Flight
     {
@@ -19,10 +19,10 @@ namespace PRG2_T13_03
         }
 
         public NORMFlight() { }
-        public NORMFlight(string flightNumber, string origin, string destination, DateTime expectedTime, string status): 
+        public NORMFlight(string flightNumber, string origin, string destination, DateTime expectedTime, string status) :
             base(flightNumber, origin, destination, expectedTime, status)
         {
-           
+
         }
     }
 }

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PRG2_T13_03
+namespace PRG2_T13_03.Classes.Flights
 {
     internal class CFFTFlight : Flight
     {
@@ -22,6 +22,7 @@ namespace PRG2_T13_03
 
         public CFFTFlight() { }
         public CFFTFlight(string flightNumber, string origin, string destination, DateTime expectedTime, string status) :
-            base(flightNumber, origin, destination, expectedTime, status) {}
+            base(flightNumber, origin, destination, expectedTime, status)
+        { }
     }
 }
