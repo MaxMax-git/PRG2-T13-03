@@ -24,18 +24,14 @@ namespace PRG2_T13_03.Classes
 
         public double CalculateFees()// PLACEHOLDER
         {
-            // Make this value into the base fee before promotions
             double fees = 0;
-
-            int noOfFlights = Flights.Count;
-
-            // For every 3 flights arriving/ departing, airlines will receive a discount
-            fees -= ((int)noOfFlights % 3) * 350;
-
             bool specialRequestFound = false;
             foreach (KeyValuePair<string, Flight> kvp in Flights)
             {
                 Flight flight = kvp.Value;
+
+                // Calculate and add to fees
+                fees += flight.CalculateFees();
 
                 // For flights arriving before 11 am or after 9 pm
                 int hours = flight.ExpectedTime.TimeOfDay.Hours;
@@ -43,9 +39,9 @@ namespace PRG2_T13_03.Classes
 
                 // For flights with these origins:
                 // Dubai(DXB), Bangkok(BKK) or Tokyo(NRT)
-                if (flight.Origin == "Dubai(DXB)" 
-                    || flight.Origin == "Bangkok(BKK)"
-                    || flight.Origin == "Tokyo(NRT)"
+                if (flight.Origin == "Dubai (DXB)" 
+                    || flight.Origin == "Bangkok (BKK)"
+                    || flight.Origin == "Tokyo (NRT)"
                     ) fees -= 25;
 
                 // To find if there is any special request
@@ -55,6 +51,11 @@ namespace PRG2_T13_03.Classes
                     || flight is LWTTFlight
                     ) specialRequestFound = true;
             }
+
+            int noOfFlights = Flights.Count;
+
+            // For every 3 flights arriving/ departing, airlines will receive a discount
+            fees -= ((int)noOfFlights % 3) * 350;
 
             // For not indicating any special request codes
             if (specialRequestFound) fees -= 50;
