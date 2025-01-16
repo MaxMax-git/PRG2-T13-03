@@ -8,7 +8,7 @@ namespace PRG2_T13_03
 {
     internal class DDJBFlight : Flight
     {
-        public double RequestFee { get; set; }
+        public double RequestFee { get; set; } = 300;
 
         public override double CalculateFees()
         {
@@ -21,10 +21,7 @@ namespace PRG2_T13_03
         }
 
         public DDJBFlight() { }
-        public DDJBFlight(string flightNumber, string origin, string destination, DateTime expectedTime, string status, double requestFee): 
-            base(flightNumber, origin, destination, expectedTime, status)
-        {
-           RequestFee = requestFee;
-        }
+        public DDJBFlight(string flightNumber, string origin, string destination, DateTime expectedTime, string status): 
+            base(flightNumber, origin, destination, expectedTime, status) {}
     }
 }
