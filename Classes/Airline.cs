@@ -40,7 +40,7 @@ namespace PRG2_T13_03.Classes
 
                 // For flights with these origins:
                 // Dubai(DXB), Bangkok(BKK) or Tokyo(NRT)
-                if (flight.Origin == "Dubai(DXB)
+                if (flight.Origin == "Dubai(DXB)" 
                     || flight.Origin == "Bangkok(BKK)"
                     || flight.Origin == "Tokyo(NRT)"
                     ) fees -= 25;
