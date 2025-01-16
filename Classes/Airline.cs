@@ -15,9 +15,7 @@ namespace PRG2_T13_03.Classes
 
         public bool AddFlight(Flight flight)// PLACEHOLDER
         {
-            if (Flights.ContainsKey(flight.FlightNumber)) return false;
-            Flights.Add(flight.FlightNumber, flight);
-            return true;
+            return Flights.TryAdd(flight.FlightNumber, flight);
         }
 
         public double CalculateFees()// PLACEHOLDER
