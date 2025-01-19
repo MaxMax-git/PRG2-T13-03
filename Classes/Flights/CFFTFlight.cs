@@ -18,14 +18,7 @@ namespace PRG2_T13_03.Classes.Flights
         // Methods
         public override double CalculateFees()
         {
-            // Boarding Gates Base Fee
-            double fee = 300 + RequestFee;
-
-            // Destination/Origin in Singapore
-            fee += (Origin == "Singapore (SIN)") ? 800 : 0;
-            fee += (Destination == "Singapore (SIN)") ? 500 : 0;
-
-            return fee;
+            return base.CalculateFees() + RequestFee;
         }
 
         public override string ToString()

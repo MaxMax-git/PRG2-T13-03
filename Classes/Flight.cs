@@ -20,9 +20,17 @@ namespace PRG2_T13_03.Classes
 
 
         // Methods
+
+        // Base implementation of calculate fees, will be used for flight subclasses
         public virtual double CalculateFees() // virtual -> override in its child classes
         {
-            return 0.0; // PLACEHOLDER
+            double fee = 300;
+
+            // Destination/Origin in Singapore
+            fee += (Origin == "Singapore (SIN)") ? 800 : 0;
+            fee += (Destination == "Singapore (SIN)") ? 500 : 0;
+
+            return fee;
         }
         public override string ToString()
         {

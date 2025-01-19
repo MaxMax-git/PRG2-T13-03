@@ -25,13 +25,26 @@ namespace PRG2_T13_03.Classes
         public double CalculateFees()// PLACEHOLDER
         {
             double fees = 0;
-            bool specialRequestFound = false;
+
+            int noOfFlights = Flights.Count;
+
+            // Initiate base fee first IF NO OF FLIGHTS > 5 to apply 3% discount if necessary
+            if (noOfFlights > 5)
+            {
+                foreach (KeyValuePair<string, Flight> kvp in Flights)
+                {
+                    fees += kvp.Value.CalculateFees();
+                }
+                fees *= 0.97;
+            }
+
             foreach (KeyValuePair<string, Flight> kvp in Flights)
             {
                 Flight flight = kvp.Value;
 
-                // Calculate and add to fees
-                fees += flight.CalculateFees();
+                // Calculate and add to fees IF NO OF FLIGHTS <= 5
+                // (to not overstate the actual value)
+                if (noOfFlights <= 5) fees += flight.CalculateFees();
 
                 // For flights arriving before 11 am or after 9 pm
                 int hours = flight.ExpectedTime.TimeOfDay.Hours;
@@ -44,24 +57,12 @@ namespace PRG2_T13_03.Classes
                     || flight.Origin == "Tokyo (NRT)"
                     ) fees -= 25;
 
-                // To find if there is any special request
-                if (specialRequestFound) continue;
-                if (flight is CFFTFlight
-                    || flight is DDJBFlight
-                    || flight is LWTTFlight
-                    ) specialRequestFound = true;
+                // For flights not indicating any special request codes
+                if (flight is NORMFlight) fees -= 50;
             }
-
-            int noOfFlights = Flights.Count;
 
             // For every 3 flights arriving/ departing, airlines will receive a discount
             fees -= ((int)noOfFlights % 3) * 350;
-
-            // For not indicating any special request codes
-            if (specialRequestFound) fees -= 50;
-
-            // For more than 5 flights arriving/departing, airlines receive an additional discount off the total bill
-            fees *= (noOfFlights > 5) ? 0.97 : 1;
 
             return (fees < 0) ? 0 : fees; // Makes sure the fees don't go below 0
         }
