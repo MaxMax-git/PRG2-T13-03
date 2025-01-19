@@ -29,10 +29,8 @@ namespace PRG2_T13_03.Classes.Flights
 
         // Constructor
         public DDJBFlight() { }
-        public DDJBFlight(string flightNumber, string origin, string destination, DateTime expectedTime, string status) :
-            base(flightNumber, origin, destination, expectedTime, status)
-        {
-            //
-        }
+        public DDJBFlight(string flightNumber, string origin, string destination, DateTime expectedTime) :
+            base(flightNumber, origin, destination, expectedTime)
+        { }
     }
 }
