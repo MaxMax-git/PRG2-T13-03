@@ -20,7 +20,7 @@ class Program
         int count = 0; 
 
         // use StreamReader to read the datafile
-        using (StreamReader sr = new StreamReader("airlines.csv")) // reads the Airlines file.csv
+        using (StreamReader sr = new StreamReader("Data/airlines.csv")) // reads the Airlines file.csv
         {
             sr.ReadLine(); // ignore the header, don't need it
             string? line; // initialise string line to use for ltr
@@ -57,7 +57,7 @@ class Program
         int count = 0;
 
         // use StreamReader to read the datafile
-        using (StreamReader sr = new StreamReader("boardinggates.csv")) // reads the Boarding Gates file.csv
+        using (StreamReader sr = new StreamReader("Data/boardinggates.csv")) // reads the Boarding Gates file.csv
         {
             sr.ReadLine(); // ignore the header
             string? line; // initialise string line to use for ltr
