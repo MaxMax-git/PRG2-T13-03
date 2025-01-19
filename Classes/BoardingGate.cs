@@ -35,13 +35,12 @@ namespace PRG2_T13_03.Classes
             Flight = new NORMFlight();
         }
 
-        public BoardingGate(string gateName, bool supportsCFFT, bool supportDDJB, bool supportsLWTT, Flight flight) // parameterized consturctor
+        public BoardingGate(string gateName, bool supportsCFFT, bool supportDDJB, bool supportsLWTT) // parameterized consturctor
         {
             GateName = gateName;
             SupportsCFFT = supportsCFFT;
             SupportsDDJB = supportDDJB;
             SupportsLWTT = supportsLWTT;
-            Flight = flight;
         }
     }
 }
