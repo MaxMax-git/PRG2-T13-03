@@ -15,7 +15,7 @@ namespace PRG2_T13_03.Classes.Flights
 
 
         // Methods
-        public override double CalculateFees()
+        public override double CalculateFees() 
         {
             // Boarding Gates Base Fee
             double fee = 300;

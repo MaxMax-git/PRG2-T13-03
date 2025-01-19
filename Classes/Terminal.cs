@@ -12,7 +12,7 @@ namespace PRG2_T13_03.Classes
 {
     class Terminal
     {
-        // Properties
+        // Properties & dictionaries initialised at properties.
         public string TerminalName { get; set; } = "";
         public Dictionary<string, Airline> Airlines { get; set; } = new Dictionary<string, Airline>();
         public Dictionary<string, Flight> Flights { get; set; } = new Dictionary<string, Flight>();
@@ -56,10 +56,10 @@ namespace PRG2_T13_03.Classes
         }
 
         // Constructor
-        public Terminal() { }
-        public Terminal(string terminalName)
+        public Terminal() { } // default
+        public Terminal(string terminalName) // parameterized
         {
-            TerminalName = terminalName;
+            TerminalName = terminalName; 
         }
     }
 }

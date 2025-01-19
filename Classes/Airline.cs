@@ -78,8 +78,8 @@ namespace PRG2_T13_03.Classes
 
 
         // Constructor
-        public Airline() { }
-        public Airline(string name, string code)
+        public Airline() { } // default
+        public Airline(string name, string code) // parameterized
         {
             Name = name;
             Code = code;
