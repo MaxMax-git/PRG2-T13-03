@@ -205,10 +205,10 @@ class Program
     private static Dictionary<string, Action> options = new Dictionary<string, Action>
     {
         {"1", () => ListAllFlights()},
-         {"2", () => ListBoardingGates()},
+        {"2", () => ListBoardingGates()},
         // {"3", () => AssignFlightToBoardingGate()},
         // {"4", () => CreateFlight()},
-        // {"5", () => DisplayAirlineFlights()},
+        {"5", () => DisplayAirlineFlights()},
         // {"6", () => ModifyFlightDetails()},
         // {"7", () => DisplayFlightSchedule()},
         {"0", () => {
@@ -240,15 +240,15 @@ class Program
 
     private static void ListAllFlights()
     {
+        string format = "{0,-16}{1,-23}{2,-23}{3,-23}{4}";
         // Header
         Console.WriteLine(
             "=============================================\r\n" +
             "List of Flights for Changi Airport Terminal 5\r\n" +
             "=============================================");
 
-        string format = "{0,-16}{1,-23}{2,-23}{3,-23}{4}";
+        // Display the Flights with their basic Information.
         Console.WriteLine(format, "Flight Number", "Airline Name", "Origin", "Destination", "Expected Departure/Arrival Time");
-
         foreach (KeyValuePair<string, Flight> kvp in flightDict)
         {
             Flight flight = kvp.Value;
@@ -268,15 +268,15 @@ class Program
     // List all the boarding gates
     private static void ListBoardingGates()
     {
+        string format = "{0,-16}{1,-23}{2,-23}{3}";
         // Header
         Console.WriteLine(
             "=============================================\r\n" +
             "List of Boarding Gates for Changi Airport Terminal 5\r\n" +
             "=============================================");
 
-        string format = "{0,-16}{1,-23}{2,-23}{3}";
+        // Display the Boarding Gates & Special Request Codes
         Console.WriteLine(format, "Gate Name", "DDJB", "CFFT", "LWTT");
-
         foreach (KeyValuePair<string, BoardingGate> kvp in boardingGateDict)
         {
             BoardingGate boardingGate = kvp.Value;
@@ -289,6 +289,86 @@ class Program
         }
         Console.WriteLine();
     }
+
+    // PART 7 & 8 //
+    // ListAirLines() -> Shows all the Airline Name & Code.
+    private static void ListAirlines()
+    {
+        string format = "{0,-16}{1}";
+        // Header
+        Console.WriteLine(
+            "=============================================\r\n" +
+            "List of Airlines for Changi Airport Terminal 5\r\n" +
+            "=============================================");
+
+        // Display all Airlines Available
+        Console.WriteLine(format, "Airline Code", "Airline Name");
+        foreach (KeyValuePair<string, Airline> kvp in airlineDict)
+        {
+            Airline airline = kvp.Value;
+            Console.WriteLine(format,
+                airline.Code,
+                airline.Name
+            );
+        }
+    }
+
+    // PART 7 //
+    private static void DisplayAirlineFlights()
+    {
+        string format = "{0,-16}{1,-23}{2,-23}{3,-23}{4}";
+
+        string airlineCode = "";
+
+        // List all the Airlines available
+        ListAirlines();
+
+        // Prompt the user to enter the 2-Letter Airline Code (e.g. SQ or MH, etc.)
+        while (true)
+        {
+            Console.Write("Enter the Airline Code: ");
+            airlineCode = Console.ReadLine()!.ToUpper(); // changes lowercase inputs to uppercase
+            
+            // Found Airline Code -> true
+            // No found Airline Code -> false
+            bool match = airlineDict.ContainsKey( airlineCode );
+
+            if (match) { break; } // proceed if found Airline Code
+            Console.WriteLine("Invalid Option."); // else prompt again.
+        }
+
+        // Retrieve the Airline object selected.
+        Airline myAirline = airlineDict[airlineCode];
+
+        // Header
+        Console.WriteLine(
+            "=============================================\r\n" +
+            "List of Flights for Changi Airport Terminal 5\r\n" +
+            "=============================================");
+
+        // Display the Flights with their basic Information.
+        Console.WriteLine(format, "Flight Number", "Airline Name", "Origin", "Destination", "Expected Departure/Arrival Time");
+        foreach (KeyValuePair<string, Flight> kvp in flightDict)
+        {
+            Flight flight = kvp.Value;
+            string flightAirline = flight.FlightNumber.Substring(0, 2);
+
+            // Check for Matching Airline Code
+            if (myAirline.Code == flightAirline)
+            {
+                Console.WriteLine(format,
+                    flight.FlightNumber,
+                    airlineDict[flightAirline].Name, // Gets the name from the Airline object
+                    flight.Origin,
+                    flight.Destination,
+                    flight.ExpectedTime
+                );
+            }
+        }
+        // TO BE CONTINUED
+
+    }
+
 
     static void Main(string[] args)
     {
