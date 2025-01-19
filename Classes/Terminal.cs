@@ -23,6 +23,8 @@ namespace PRG2_T13_03.Classes
         // Methods
         public bool AddAirline(Airline airline)
         {
+            // If the airline already exists, return False
+            // else, airline does not exists, add Airline to Dict & return True
             return Airlines.TryAdd(airline.Code, airline);
         }
 
@@ -55,7 +57,7 @@ namespace PRG2_T13_03.Classes
             return $"Terminal Name: {TerminalName}";
         }
 
-        // Constructor
+        // Constructor, ->Done
         public Terminal() { } // default
         public Terminal(string terminalName) // parameterized
         {
