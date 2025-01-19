@@ -2,6 +2,7 @@
 using PRG2_T13_03.Classes;
 using PRG2_T13_03.Classes.Flights;
 using System;
+using System.Collections.Generic;
 using System.Net.Http.Headers;
 
 class Program
@@ -204,7 +205,7 @@ class Program
     private static Dictionary<string, Action> options = new Dictionary<string, Action>
     {
         {"1", () => ListAllFlights()},
-        // {"2", () => ListBoardingGates()},
+         {"2", () => ListBoardingGates()},
         // {"3", () => AssignFlightToBoardingGate()},
         // {"4", () => CreateFlight()},
         // {"5", () => DisplayAirlineFlights()},
@@ -239,12 +240,15 @@ class Program
 
     private static void ListAllFlights()
     {
+        // Header
         Console.WriteLine(
             "=============================================\r\n" +
             "List of Flights for Changi Airport Terminal 5\r\n" +
             "=============================================");
+
         string format = "{0,-16}{1,-23}{2,-23}{3,-23}{4}";
         Console.WriteLine(format, "Flight Number", "Airline Name", "Origin", "Destination", "Expected Departure/Arrival Time");
+
         foreach (KeyValuePair<string, Flight> kvp in flightDict)
         {
             Flight flight = kvp.Value;
@@ -254,6 +258,33 @@ class Program
                 flight.Origin,
                 flight.Destination,
                 flight.ExpectedTime
+            );
+        }
+        Console.WriteLine();
+    }
+
+
+    // PART 4 //
+    // List all the boarding gates
+    private static void ListBoardingGates()
+    {
+        // Header
+        Console.WriteLine(
+            "=============================================\r\n" +
+            "List of Boarding Gates for Changi Airport Terminal 5\r\n" +
+            "=============================================");
+
+        string format = "{0,-16}{1,-23}{2,-23}{3}";
+        Console.WriteLine(format, "Gate Name", "DDJB", "CFFT", "LWTT");
+
+        foreach (KeyValuePair<string, BoardingGate> kvp in boardingGateDict)
+        {
+            BoardingGate boardingGate = kvp.Value;
+            Console.WriteLine(format, 
+                boardingGate.GateName,
+                boardingGate.SupportsDDJB,
+                boardingGate.SupportsCFFT,
+                boardingGate.SupportsLWTT
             );
         }
         Console.WriteLine();
