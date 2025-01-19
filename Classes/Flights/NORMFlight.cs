@@ -15,19 +15,17 @@ namespace PRG2_T13_03.Classes.Flights
 
 
         // Methods
+        public override double CalculateFees()
+        {
+            // Boarding Gates Base Fee
+            double fee = 300;
 
-        // Done in superclass
-        //public override double CalculateFees() 
-        //{
-        //    // Boarding Gates Base Fee
-        //    double fee = 300;
+            // Destination/Origin in Singapore
+            fee += (Origin == "Singapore (SIN)") ? 800 : 0;
+            fee += (Destination == "Singapore (SIN)") ? 500 : 0;
 
-        //    // Destination/Origin in Singapore
-        //    fee += (Origin == "Singapore (SIN)") ? 800 : 0;
-        //    fee += (Destination == "Singapore (SIN)") ? 500 : 0;
-            
-        //    return fee;
-        //}
+            return fee;
+        }
 
         public override string ToString()
         {
@@ -37,10 +35,8 @@ namespace PRG2_T13_03.Classes.Flights
 
         // Constructor
         public NORMFlight() { }
-        public NORMFlight(string flightNumber, string origin, string destination, DateTime expectedTime, string status) :
-            base(flightNumber, origin, destination, expectedTime, status)
-        {
-            //
-        }
+        public NORMFlight(string flightNumber, string origin, string destination, DateTime expectedTime) :
+            base(flightNumber, origin, destination, expectedTime)
+        { }
     }
 }

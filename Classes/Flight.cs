@@ -16,7 +16,7 @@ namespace PRG2_T13_03.Classes
         public string Origin { get; set; } = "";
         public string Destination { get; set; } = "";
         public DateTime ExpectedTime { get; set; }
-        public string Status { get; set; } = "";
+        public string Status { get; set; } = "On Time"; // Set to this UNLESS otherwise specified
 
 
         // Methods
@@ -40,13 +40,13 @@ namespace PRG2_T13_03.Classes
 
         // Constructor
         public Flight() { }
-        public Flight(string flightNumber, string origin, string destination, DateTime expectedTime, string status)
+        public Flight(string flightNumber, string origin, string destination, DateTime expectedTime)
         {
             FlightNumber = flightNumber;
             Origin = origin;
             Destination = destination;
             ExpectedTime = expectedTime;
-            Status = status;
+            //Status = status;
         }
     }
 }
