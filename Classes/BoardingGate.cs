@@ -30,11 +30,11 @@ namespace PRG2_T13_03.Classes
         }
 
         // Constructor
-        public BoardingGate()
+        public BoardingGate() // default constructor
         {
             Flight = new NORMFlight();
         }
-        // default constructor
+
         public BoardingGate(string gateName, bool supportsCFFT, bool supportDDJB, bool supportsLWTT, Flight flight) // parameterized consturctor
         {
             GateName = gateName;

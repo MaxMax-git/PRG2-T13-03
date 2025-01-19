@@ -15,7 +15,7 @@ namespace PRG2_T13_03.Classes.Flights
 
 
         // Methods
-        public override double CalculateFees()
+        public override double CalculateFees() 
         {
             throw new NotImplementedException();
         }

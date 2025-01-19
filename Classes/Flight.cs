@@ -20,7 +20,10 @@ namespace PRG2_T13_03.Classes
 
 
         // Methods
-        public abstract double CalculateFees();
+        public virtual double CalculateFees() // virtual -> override in its child classes
+        {
+            return 0.0; // PLACEHOLDER
+        }
         public override string ToString()
         {
             return $"Flight Number: {FlightNumber}\tOrigin: {Origin}\tDestination: {Destination}\tExpectedTime: {ExpectedTime}\tStatus: {Status}";
