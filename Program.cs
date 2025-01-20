@@ -3,6 +3,7 @@ using PRG2_T13_03.Classes;
 using PRG2_T13_03.Classes.Flights;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.Net.Http.Headers;
 
 class Program
@@ -35,7 +36,7 @@ class Program
     //      Output: "Do you like apples? " -- user inputs yes or no
     //
     // Note:
-    //  Inputs are trimmed and turned to lowercase
+    //  Inputs are trimmed
     //  Messages/Errors uses Console.WriteLine()
     private static string ValidateInputFrom(ICollection<string> validInputs, string msg = "Please select your option:", string err = "Invalid option.")
     {
@@ -44,10 +45,31 @@ class Program
         {
             Console.WriteLine(msg);
             input = Console.ReadLine();
-            input = (input != null) ? input.Trim().ToLower() : input;
+            input = (input != null) ? input.Trim(): input;
             if (input == null || !validInputs.Contains(input)) Console.WriteLine(err);
         }
         return input;
+    }
+
+    // GetSpecialRequestCode( Flight flight )
+    //  Returns the special request code of the flight as a string
+    //
+    // Possible Values:
+    //  CFFT, DDJB, LWTT, None
+    private static string GetSpecialRequestCode(Flight flight)
+    {
+        return (flight is CFFTFlight) ? "CFFT" : (flight is DDJBFlight) ? "DDJB" : (flight is LWTTFlight) ? "LWTT" : "None";
+    }
+
+    // BoardingGateSupportsFlight( BoardingGate bg, Flight flight )
+    //  Returns whether a boarding gate supports a flight depending on the flight's special request code
+    private static bool BoardingGateSupportsFlight(BoardingGate bg, Flight flight)
+    {
+        return 
+            (flight is CFFTFlight) ? bg.SupportsCFFT :
+            (flight is DDJBFlight) ? bg.SupportsDDJB :
+            (flight is LWTTFlight) ? bg.SupportsCFFT :
+            true;
     }
 
     // PART 1 //
@@ -206,11 +228,11 @@ class Program
     {
         {"1", () => ListAllFlights()},
         {"2", () => ListBoardingGates()},
-        // {"3", () => AssignFlightToBoardingGate()},
-        // {"4", () => CreateFlight()},
+        {"3", () => AssignFlightToBoardingGate()},
+        //{"4", () => CreateFlight()},
         {"5", () => DisplayAirlineFlights()},
-        // {"6", () => ModifyFlightDetails()},
-        // {"7", () => DisplayFlightSchedule()},
+        //{"6", () => ModifyFlightDetails()},
+        //{"7", () => DisplayFlightSchedule()},
         {"0", () => {
             Console.Write("Goodbye!");
             Environment.Exit(0);
@@ -288,6 +310,54 @@ class Program
             );
         }
         Console.WriteLine();
+    }
+
+    // PART 5 //
+    private static void AssignFlightToBoardingGate()
+    {
+        Console.WriteLine(
+            "=============================================  \r\n" +
+            "Assign a Boarding Gate to a Flight             \r\n" +
+            "=============================================");
+        Flight flight = flightDict[ValidateInputFrom(flightDict.Keys, "Enter Flight Number:", "Invalid Flight Number!")];
+        BoardingGate boardingGate;
+        while (true)
+        {
+            boardingGate = boardingGateDict[ValidateInputFrom(boardingGateDict.Keys, "Enter Boarding Gate Name:", "Invalid Boarding Gate Name!")];
+            if (boardingGate.Flight != null)
+            {
+                Console.WriteLine($"Boarding Gate {boardingGate.GateName} is already assigned to flight {flight.FlightNumber}!");
+            }
+            else if (!BoardingGateSupportsFlight(boardingGate, flight))
+            {
+                Console.WriteLine($"Boarding Gate {boardingGate.GateName} is already assigned to flight {flight.FlightNumber}!");
+            }
+            else break;
+        }
+        
+        Console.WriteLine($"Flight Number: {flight.FlightNumber}");
+        Console.WriteLine($"Origin: {flight.Origin}");
+        Console.WriteLine($"Destination: {flight.Destination}");
+        Console.WriteLine($"Expected Time: {flight.ExpectedTime}");
+        Console.WriteLine($"Special Request Code: {GetSpecialRequestCode(flight)}");
+        Console.WriteLine($"Boarding Gate Name: {boardingGate.GateName}");
+        Console.WriteLine($"Supports DDJB: {boardingGate.SupportsDDJB}");
+        Console.WriteLine($"Supports CFFT: {boardingGate.SupportsCFFT}");
+        Console.WriteLine($"Supports LWTT: {boardingGate.SupportsLWTT}");
+
+        // Prompt to update flight status
+        if (ValidateInputFrom(new string[] { "Y", "N", "y", "n" }, "Would you like to update the status of the flight? (Y/N)").ToLower() == "y")
+        {
+            Console.WriteLine("1. Delayed");
+            Console.WriteLine("2. Boarding");
+            Console.WriteLine("3. On Time");
+
+            // Prompt to add status
+            string status = ValidateInputFrom(new string[] { "1", "2", "3" }, "Please select the new status of the flight:");
+            flight.Status = (status == "1") ? "Delayed" : (status == "2") ? "Boarding" : "On Time";
+        }
+        
+        Console.WriteLine($"Flight {flight.FlightNumber} has been assigned to Boarding Gate {boardingGate.GateName}!");
     }
 
     // PART 7 & 8 //
