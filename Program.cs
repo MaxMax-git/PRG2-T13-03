@@ -4,7 +4,10 @@ using PRG2_T13_03.Classes.Flights;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
+using System.Diagnostics;
 using System.Net.Http.Headers;
+
+// Add attribute boarding gate to flight class
 
 class Program
 {
@@ -49,7 +52,7 @@ class Program
             if (input == null || !validInputs.Contains(input)) Console.WriteLine(err);
         }
         return input;
-    }
+    }   
 
     // GetSpecialRequestCode( Flight flight )
     //  Returns the special request code of the flight as a string
@@ -58,7 +61,10 @@ class Program
     //  CFFT, DDJB, LWTT, None
     private static string GetSpecialRequestCode(Flight flight)
     {
-        return (flight is CFFTFlight) ? "CFFT" : (flight is DDJBFlight) ? "DDJB" : (flight is LWTTFlight) ? "LWTT" : "None";
+        return (flight is CFFTFlight) ? "CFFT" :
+               (flight is DDJBFlight) ? "DDJB" :
+               (flight is LWTTFlight) ? "LWTT" :
+               "None";
     }
 
     // BoardingGateSupportsFlight( BoardingGate bg, Flight flight )
@@ -70,6 +76,22 @@ class Program
             (flight is DDJBFlight) ? bg.SupportsDDJB :
             (flight is LWTTFlight) ? bg.SupportsCFFT :
             true;
+    }
+
+    // GetFlightBoardingGate ( Flight myFlight )
+    //  Returns the Boarding Gate name that fligt belongs to. If none, return "None"
+    private static string GetFlightBoardingGate(Flight myFlight)
+    {
+        // Iterate thru the boarding gate dictionary.
+        foreach (BoardingGate boardingGate in boardingGateDict.Values)
+        {
+            // If flight allocated to boardingGate matches myFlight
+            if (boardingGate.Flight == myFlight)
+            {
+                return boardingGate.GateName; // returns name of BoardingGate
+            }
+        }
+        return "None"; // if no boardingGate assigned to flight
     }
 
     // PART 1 //
@@ -388,7 +410,12 @@ class Program
     {
         string format = "{0,-16}{1,-23}{2,-23}{3,-23}{4}";
 
+        // Values
+        bool match = false;
         string airlineCode = "";
+        string flightNo = "";
+        Airline myAirline; // initialise to retrieve later for further use.
+        Flight myFlight; // initialise to retrieve later for further use.
 
         // List all the Airlines available
         ListAirlines();
@@ -397,18 +424,18 @@ class Program
         while (true)
         {
             Console.Write("Enter the Airline Code: ");
-            airlineCode = Console.ReadLine()!.ToUpper(); // changes lowercase inputs to uppercase
+            airlineCode = Console.ReadLine()!.ToUpper().Trim(); // changes lowercase inputs to uppercase & remove whitespace
             
             // Found Airline Code -> true
             // No found Airline Code -> false
-            bool match = airlineDict.ContainsKey( airlineCode );
+            match = airlineDict.ContainsKey( airlineCode );
 
             if (match) { break; } // proceed if found Airline Code
             Console.WriteLine("Invalid Option."); // else prompt again.
         }
 
         // Retrieve the Airline object selected.
-        Airline myAirline = airlineDict[airlineCode];
+        myAirline = airlineDict[airlineCode];
 
         // Header
         Console.WriteLine(
@@ -435,9 +462,46 @@ class Program
                 );
             }
         }
-        // TO BE CONTINUED
 
-    }
+        // Prompt the user to select a Flight Number
+        while (true)
+        {
+            Console.Write("Enter the Flight Number: ");
+            flightNo = Console.ReadLine()!.ToUpper().Trim(); // UpperCase the input.
+
+            // Found flight Code -> true
+            // No found flight Code -> false
+            match = flightDict.ContainsKey(flightNo);
+
+            // Check for Valid flight code
+            if (match)
+            {
+                // AND check whether flight code is from CHOSEN Airline
+                if (flightNo.Substring(0, 2) == airlineCode) { break; }
+            }
+            Console.WriteLine("Invalid Option."); 
+        }
+
+        // Retrieve the Flight object selected
+        myFlight = flightDict[flightNo];
+
+        // Display the FULL Flight details.
+        // Header
+        Console.WriteLine(
+            "=============================================\r\n" +
+            $"Details of Flight {myFlight.FlightNumber}\r\n" +
+            "=============================================");
+
+        // Display selected flight details
+        Console.WriteLine(
+            $"Flight Number: {myFlight.FlightNumber}\r\n" +
+            $"Airline Name: {myAirline}\r\n" +
+            $"Origin: {myFlight.Origin}\r\n" + 
+            $"Destination: {myFlight.Destination}\r\n" + 
+            $"Expected Departure/ Arrival Time: {myFlight.ExpectedTime}\r\n" +
+            $"Special Request Code: {GetSpecialRequestCode(myFlight)}\r\n" + 
+            $"Boarding Gate: {GetFlightBoardingGate(myFlight)}" );
+    } // end of this method, no indentatiom errors
 
 
     static void Main(string[] args)
@@ -452,9 +516,9 @@ class Program
         LoadFlights();
 
         // Program start
-        Console.Write("\n\n\n\n");
         while (true)
         {
+            Console.Write("\n\n\n\n");
             string option = ShowMenu();
             options[option]();
         }
