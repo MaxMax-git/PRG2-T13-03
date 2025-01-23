@@ -7,7 +7,15 @@ using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Net.Http.Headers;
 
-// Add attribute boarding gate to flight class
+// -- IMPORTANT NOTES (to be deleted after completion.) -- // 
+// USE THE DICTIONARIES FROM T5!!
+// T5 NOT STATIC, USE IN THE PROGRAM.
+// SPECIFY THE ERROR FOR INPUT VALIDATION!!! -> More marks. :D
+
+// ENSURE THAT COMMENTS ARE PROPERLY LABELLED. -> Marks will be awarded.
+// -> Do not spam/ flood code with comments. 
+
+// TODO: Add attribute boarding gate to flight class
 
 class Program
 {
