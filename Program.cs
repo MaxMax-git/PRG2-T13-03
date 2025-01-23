@@ -320,15 +320,15 @@ class Program
     // List all the boarding gates
     private static void ListAllBoardingGates()
     {
-        string format = "{0,-16}{1,-23}{2,-23}{3}";
+        string format = "{0,-16}{1,-23}{2,-23}{3,-23}{4}"; // format for string (string interpolation)
         // Header
         Console.WriteLine(
             "=============================================\r\n" +
             "List of Boarding Gates for Changi Airport Terminal 5\r\n" +
             "=============================================");
 
-        // Display the Boarding Gates & Special Request Codes
-        Console.WriteLine(format, "Gate Name", "DDJB", "CFFT", "LWTT");
+        // Display the Boarding Gates & Special Request Codes, Flight Number Assigned 
+        Console.WriteLine(format, "Gate Name", "DDJB", "CFFT", "LWTT", "Assigned Flight Number");
         foreach (KeyValuePair<string, BoardingGate> kvp in boardingGateDict)
         {
             BoardingGate boardingGate = kvp.Value;
@@ -336,10 +336,10 @@ class Program
                 boardingGate.GateName,
                 boardingGate.SupportsDDJB,
                 boardingGate.SupportsCFFT,
-                boardingGate.SupportsLWTT
+                boardingGate.SupportsLWTT,
+                boardingGate.Flight?.FlightNumber ?? "--" // if flight can be null, and if null, output "--"
             );
         }
-        Console.WriteLine();
     }
 
     // PART 5 //
