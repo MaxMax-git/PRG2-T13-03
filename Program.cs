@@ -257,7 +257,7 @@ class Program
     private static Dictionary<string, Action> options = new Dictionary<string, Action>
     {
         {"1", () => ListAllFlights()},
-        {"2", () => ListBoardingGates()},
+        {"2", () => ListAllBoardingGates()},
         {"3", () => AssignFlightToBoardingGate()},
         //{"4", () => CreateFlight()},
         {"5", () => DisplayAirlineFlights()},
@@ -318,7 +318,7 @@ class Program
 
     // PART 4 //
     // List all the boarding gates
-    private static void ListBoardingGates()
+    private static void ListAllBoardingGates()
     {
         string format = "{0,-16}{1,-23}{2,-23}{3}";
         // Header
