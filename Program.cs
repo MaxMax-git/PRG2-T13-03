@@ -403,9 +403,8 @@ class Program
 
         // Display all Airlines Available
         Console.WriteLine(format, "Airline Code", "Airline Name");
-        foreach (KeyValuePair<string, Airline> kvp in airlineDict)
+        foreach (Airline airline in airlineDict.Values)
         {
-            Airline airline = kvp.Value;
             Console.WriteLine(format,
                 airline.Code,
                 airline.Name
