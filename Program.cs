@@ -262,7 +262,7 @@ class Program
         {"3", () => AssignFlightToBoardingGate()},
         //{"4", () => CreateFlight()},
         {"5", () => DisplayAirlineFlights()},
-        //{"6", () => ModifyFlightDetails()},
+        {"6", () => ModifyFlightDetails()},
         //{"7", () => DisplayFlightSchedule()},
         {"0", () => {
             Console.Write("Goodbye!");
@@ -517,6 +517,29 @@ class Program
             $"Special Request Code: {GetSpecialRequestCode(myFlight)}\r\n" + 
             $"Boarding Gate: {GetFlightBoardingGate(myFlight)}" );
     } // end of this method, no indentatiom errors
+
+    // PART 8 //
+    // ModifyFlightDetails() -> 
+    private static void ModifyFlightDetails()
+    {
+        string airlineCode = "";
+        Airline myAirline; // initialised for retrieving & using the Airline object later.
+
+        // List all the Airlines Available
+        ListAirlines();
+
+        // Prompt the user to enter the 2-Letter Airline Code (e.g. SQ or MH, etc.)
+        airlineCode = PromptAirLineCode();
+
+        // Retrieve the Airline object selected.
+        myAirline = airlineDict[airlineCode]; 
+
+
+    }
+
+
+
+
 
 
     static void Main(string[] args)
