@@ -461,9 +461,8 @@ class Program
 
         // Display the Flights with their basic Information.
         Console.WriteLine(format, "Flight Number", "Airline Name", "Origin", "Destination", "Expected Departure/Arrival Time");
-        foreach (KeyValuePair<string, Flight> kvp in flightDict)
+        foreach (Flight flight in flightDict.Values)
         {
-            Flight flight = kvp.Value;
             string flightAirline = flight.FlightNumber.Substring(0, 2);
 
             // Check for Matching Airline Code
