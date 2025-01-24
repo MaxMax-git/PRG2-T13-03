@@ -414,12 +414,16 @@ class Program
     }
 
     // PART 7 & 8 //
-    // PromptAirLineCode() -> Prompt the user to enter the 2-Letter Airline Code (e.g. SQ or MH, etc.)
-    private static string PromptAirLineCode()
+    // PromptAirLineCode(string message)
+    //   message -> Display message that prompts user to enter the Airline Code
+    // Prompt the user to enter the 2-Letter Airline Code (e.g. SQ or MH, etc.)
+    // 
+    // Returns valid Airline code.
+    private static string PromptAirLineCode(string message)
     {
         while (true)
         {
-            Console.Write("Enter the Airline Code: ");
+            Console.Write(message);
             string airlineCode = Console.ReadLine()!.ToUpper().Trim(); // changes lowercase inputs to uppercase & remove whitespace
 
             // Found Airline Code -> true
@@ -448,7 +452,7 @@ class Program
         ListAirlines();
 
         // Prompt the user to enter the 2-Letter Airline Code (e.g. SQ or MH, etc.)
-        airlineCode = PromptAirLineCode();
+        airlineCode = PromptAirLineCode("Enter airline code: ");
 
         // Retrieve the Airline object selected.
         myAirline = airlineDict[airlineCode];
@@ -456,7 +460,7 @@ class Program
         // Header
         Console.WriteLine(
             "=============================================\r\n" +
-            "List of Flights for Changi Airport Terminal 5\r\n" +
+            $"List of Flights for {myAirline.Name}\r\n" +
             "=============================================");
 
         // Display the Flights with their basic Information.
@@ -522,6 +526,7 @@ class Program
     // ModifyFlightDetails() -> 
     private static void ModifyFlightDetails()
     {
+        string format = "{0,-16}{1,-23}{2,-23}{3,-23}{4}";
         string airlineCode = "";
         Airline myAirline; // initialised for retrieving & using the Airline object later.
 
@@ -529,11 +534,35 @@ class Program
         ListAirlines();
 
         // Prompt the user to enter the 2-Letter Airline Code (e.g. SQ or MH, etc.)
-        airlineCode = PromptAirLineCode();
+        airlineCode = PromptAirLineCode("Enter airline code: ");
 
         // Retrieve the Airline object selected.
-        myAirline = airlineDict[airlineCode]; 
+        myAirline = airlineDict[airlineCode];
 
+        // Header
+        Console.WriteLine(
+            "=============================================\r\n" +
+            $"List of Flights for {myAirline.Name}\r\n" +
+            "=============================================");
+
+        // Display the Flights with their basic Information.
+        Console.WriteLine(format, "Flight Number", "Airline Name", "Origin", "Destination", "Expected Departure/Arrival Time");
+        foreach (Flight flight in flightDict.Values)
+        {
+            string flightAirline = flight.FlightNumber.Substring(0, 2);
+
+            // Check for Matching Airline Code
+            if (myAirline.Code == flightAirline)
+            {
+                Console.WriteLine(format,
+                    flight.FlightNumber,
+                    airlineDict[flightAirline].Name, // Gets the name from the Airline object
+                    flight.Origin,
+                    flight.Destination,
+                    flight.ExpectedTime
+                );
+            }
+        }
 
     }
 
