@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.Diagnostics;
+using System.IO;
 using System.Net.Http.Headers;
 using System.Text.RegularExpressions;
 
@@ -100,7 +101,7 @@ class Program
                 return boardingGate.GateName; // returns name of BoardingGate
             }
         }
-        return "None"; // if no boardingGate assigned to flight
+        return "Unassigned"; // if no boardingGate assigned to flight
     }
 
     // PART 1 //
@@ -435,6 +436,31 @@ class Program
         }
     }
 
+    // PART 7 & 8 //
+    // PromptFlighNumberFromAirline(string message, string airlineCode)
+    private static string PromptFlightNumberFromAirline(string message, string airlineCode)
+    {
+        // Prompt the user to select a Flight Number
+        while (true)
+        {
+            Console.Write("Enter the Flight Number: ");
+            string flightNo = Console.ReadLine()!.ToUpper().Trim(); // UpperCase the input.
+
+            // Found flight Code -> true
+            // No found flight Code -> false
+            bool match = flightDict.ContainsKey(flightNo);
+
+            // Check for Valid flight code
+            if (match)
+            {
+                // AND check whether flight code is from CHOSEN Airline
+                if (flightNo.Substring(0, 2) == airlineCode) { return flightNo; }
+                else { Console.WriteLine($"Invalid, {flightNo} not from {airlineDict[airlineCode].Name}"); }
+            }
+            else { Console.WriteLine("Invalid Flight Number. "); }
+        }
+    }
+
     // PART 7 //
     // DisplayAirlineFlights() 
     private static void DisplayAirlineFlights()
@@ -442,9 +468,6 @@ class Program
         string format = "{0,-16}{1,-23}{2,-23}{3,-23}{4}";
 
         // Values
-        bool match = false;
-        string airlineCode = "";
-        string flightNo = "";
         Airline myAirline; // initialise to retrieve later for further use.
         Flight myFlight; // initialise to retrieve later for further use.
 
@@ -452,7 +475,7 @@ class Program
         ListAirlines();
 
         // Prompt the user to enter the 2-Letter Airline Code (e.g. SQ or MH, etc.)
-        airlineCode = PromptAirLineCode("Enter airline code: ");
+        string airlineCode = PromptAirLineCode("Enter airline code: ");
 
         // Retrieve the Airline object selected.
         myAirline = airlineDict[airlineCode];
@@ -483,23 +506,7 @@ class Program
         }
 
         // Prompt the user to select a Flight Number
-        while (true)
-        {
-            Console.Write("Enter the Flight Number: ");
-            flightNo = Console.ReadLine()!.ToUpper().Trim(); // UpperCase the input.
-
-            // Found flight Code -> true
-            // No found flight Code -> false
-            match = flightDict.ContainsKey(flightNo);
-
-            // Check for Valid flight code
-            if (match)
-            {
-                // AND check whether flight code is from CHOSEN Airline
-                if (flightNo.Substring(0, 2) == airlineCode) { break; }
-            }
-            Console.WriteLine("Invalid Option."); 
-        }
+        string flightNo = PromptFlightNumberFromAirline("Enter Flight Number: ", airlineCode);
 
         // Retrieve the Flight object selected
         myFlight = flightDict[flightNo];
@@ -514,7 +521,7 @@ class Program
         // Display selected flight details
         Console.WriteLine(
             $"Flight Number: {myFlight.FlightNumber}\r\n" +
-            $"Airline Name: {myAirline}\r\n" +
+            $"Airline Name: {myAirline.Name}\r\n" +
             $"Origin: {myFlight.Origin}\r\n" + 
             $"Destination: {myFlight.Destination}\r\n" + 
             $"Expected Departure/ Arrival Time: {myFlight.ExpectedTime}\r\n" +
@@ -527,14 +534,14 @@ class Program
     private static void ModifyFlightDetails()
     {
         string format = "{0,-16}{1,-23}{2,-23}{3,-23}{4}";
-        string airlineCode = "";
+        string option = "";
         Airline myAirline; // initialised for retrieving & using the Airline object later.
 
         // List all the Airlines Available
         ListAirlines();
 
         // Prompt the user to enter the 2-Letter Airline Code (e.g. SQ or MH, etc.)
-        airlineCode = PromptAirLineCode("Enter airline code: ");
+        string airlineCode = PromptAirLineCode("Enter airline code: ");
 
         // Retrieve the Airline object selected.
         myAirline = airlineDict[airlineCode];
@@ -564,6 +571,12 @@ class Program
             }
         }
 
+        // Prompt the user to select a Flight Number
+        string flightNo = PromptFlightNumberFromAirline("Choose an existing Flight to modify or delete: ", airlineCode);
+
+        // Option 1 -> Modify Flight
+        // Option 2 -> Delete Flight
+        option = Console.ReadLine()!;
     }
 
 
