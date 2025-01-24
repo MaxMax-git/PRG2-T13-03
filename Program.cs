@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Net.Http.Headers;
+using System.Text.RegularExpressions;
 
 // -- IMPORTANT NOTES (to be deleted after completion.) -- // 
 // USE THE DICTIONARIES FROM T5!!
@@ -403,9 +404,8 @@ class Program
 
         // Display all Airlines Available
         Console.WriteLine(format, "Airline Code", "Airline Name");
-        foreach (KeyValuePair<string, Airline> kvp in airlineDict)
+        foreach (Airline airline in airlineDict.Values)
         {
-            Airline airline = kvp.Value;
             Console.WriteLine(format,
                 airline.Code,
                 airline.Name
@@ -413,7 +413,26 @@ class Program
         }
     }
 
+    // PART 7 & 8 //
+    // PromptAirLineCode() -> Prompt the user to enter the 2-Letter Airline Code (e.g. SQ or MH, etc.)
+    private static string PromptAirLineCode()
+    {
+        while (true)
+        {
+            Console.Write("Enter the Airline Code: ");
+            string airlineCode = Console.ReadLine()!.ToUpper().Trim(); // changes lowercase inputs to uppercase & remove whitespace
+
+            // Found Airline Code -> true
+            // No found Airline Code -> false
+            bool match = airlineDict.ContainsKey(airlineCode);
+
+            if (match) { return airlineCode; } // proceed if found Airline Code
+            Console.WriteLine("No matching airline code found."); // else prompt again.
+        }
+    }
+
     // PART 7 //
+    // DisplayAirlineFlights() 
     private static void DisplayAirlineFlights()
     {
         string format = "{0,-16}{1,-23}{2,-23}{3,-23}{4}";
@@ -429,18 +448,7 @@ class Program
         ListAirlines();
 
         // Prompt the user to enter the 2-Letter Airline Code (e.g. SQ or MH, etc.)
-        while (true)
-        {
-            Console.Write("Enter the Airline Code: ");
-            airlineCode = Console.ReadLine()!.ToUpper().Trim(); // changes lowercase inputs to uppercase & remove whitespace
-            
-            // Found Airline Code -> true
-            // No found Airline Code -> false
-            match = airlineDict.ContainsKey( airlineCode );
-
-            if (match) { break; } // proceed if found Airline Code
-            Console.WriteLine("Invalid Option."); // else prompt again.
-        }
+        airlineCode = PromptAirLineCode();
 
         // Retrieve the Airline object selected.
         myAirline = airlineDict[airlineCode];
@@ -453,9 +461,8 @@ class Program
 
         // Display the Flights with their basic Information.
         Console.WriteLine(format, "Flight Number", "Airline Name", "Origin", "Destination", "Expected Departure/Arrival Time");
-        foreach (KeyValuePair<string, Flight> kvp in flightDict)
+        foreach (Flight flight in flightDict.Values)
         {
-            Flight flight = kvp.Value;
             string flightAirline = flight.FlightNumber.Substring(0, 2);
 
             // Check for Matching Airline Code
