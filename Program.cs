@@ -1,4 +1,10 @@
-﻿using PRG2_T13_03;
+﻿//==========================================================
+// Student Number	: S10267518J
+// Student Name	    : Moh Journ Haydn
+// Partner Name	    : Low Yu Wen Max
+//==========================================================
+
+using PRG2_T13_03;
 using PRG2_T13_03.Classes;
 using PRG2_T13_03.Classes.Flights;
 using System;
@@ -10,8 +16,9 @@ using System.Net.Http.Headers;
 using System.Text.RegularExpressions;
 
 // -- IMPORTANT NOTES (to be deleted after completion.) -- // 
-// USE THE DICTIONARIES FROM T5!!
-// T5 NOT STATIC, USE IN THE PROGRAM.
+// *USE THE DICTIONARIES FROM T5!! 
+// *T5 NOT STATIC, USE IN THE PROGRAM. 
+
 // SPECIFY THE ERROR FOR INPUT VALIDATION!!! -> More marks. :D
 
 // ENSURE THAT COMMENTS ARE PROPERLY LABELLED. -> Marks will be awarded.
