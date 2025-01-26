@@ -34,8 +34,6 @@ class Program
     private static string boardingGateFileName = dataFolderName + "boardinggates.csv";
     private static string flightsFileName = dataFolderName + "flights.csv";
 
-    // Values
-
     // Utility
 
     // ValidateInputFrom( ICollection<string> validInputs, string? msg, string? err )
@@ -53,7 +51,7 @@ class Program
     // Note:
     //  Inputs are trimmed
     //  Messages/Errors uses Console.WriteLine()
-    private static string ValidateInputFrom(ICollection<string> validInputs, string msg = "Please select your option:", string err = "Invalid option.")
+    private static string ValidateInputFrom(ICollection<string> validInputs, string msg = "Please select your option:", string err = "Invalid option.", bool uppercase = false)
     {
         string? input = null;
         while (string.IsNullOrEmpty(input) || !validInputs.Contains(input))
@@ -61,6 +59,7 @@ class Program
             Console.WriteLine(msg);
             input = Console.ReadLine();
             input = (input != null) ? input.Trim(): input;
+            if (uppercase) { input = input.ToUpper(); }
             if (string.IsNullOrEmpty(input))
             {
                 Console.WriteLine("Input cannot be empty!");
@@ -405,7 +404,7 @@ class Program
 
     // PART 7 & 8 //
     // ListAirLines() -> Shows all the Airline Name & Code.
-    private static void ListAirlines(Terminal t5)
+    private static void ListAirlines(Dictionary<string, Airline> airlineDict)
     {
         string format = "{0,-16}{1}";
         // Header
@@ -416,7 +415,7 @@ class Program
 
         // Display all Airlines Available
         Console.WriteLine(format, "Airline Code", "Airline Name");
-        foreach (Airline airline in t5.Airlines.Values)
+        foreach (Airline airline in airlineDict.Values)
         {
             Console.WriteLine(format,
                 airline.Code,
@@ -431,7 +430,7 @@ class Program
     // Prompt the user to enter the 2-Letter Airline Code (e.g. SQ or MH, etc.)
     // 
     // Returns valid Airline code.
-    private static string PromptAirLineCode(Terminal t5, string message)
+    private static string PromptAirLineCode(Dictionary<string, Airline> airlineDict, string message)
     {
         while (true)
         {
@@ -440,7 +439,7 @@ class Program
 
             // Found Airline Code -> true
             // No found Airline Code -> false
-            bool match = t5.Airlines.ContainsKey(airlineCode);
+            bool match = airlineDict.ContainsKey(airlineCode);
 
             if (match) { return airlineCode; } // proceed if found Airline Code
             Console.WriteLine("No matching airline code found."); // else prompt again.
@@ -488,10 +487,10 @@ class Program
         Flight myFlight; // initialise to retrieve later for further use.
 
         // List all the Airlines available
-        ListAirlines(t5);
+        ListAirlines(t5.Airlines);
 
         // Prompt the user to enter the 2-Letter Airline Code (e.g. SQ or MH, etc.)
-        string airlineCode = PromptAirLineCode(t5, "Enter airline code: ");
+        string airlineCode = PromptAirLineCode(t5.Airlines, "Enter airline code: ");
 
         // Retrieve the Airline object selected.
         myAirline = t5.Airlines[airlineCode];
@@ -553,10 +552,10 @@ class Program
         string option = "";
 
         // List all the Airlines Available
-        ListAirlines(t5);
+        ListAirlines(t5.Airlines);
 
         // Prompt the user to enter the 2-Letter Airline Code (e.g. SQ or MH, etc.)
-        string airlineCode = PromptAirLineCode(t5, "Enter airline code: ");
+        string airlineCode = PromptAirLineCode(t5.Airlines, "Enter airline code: ");
 
         // Retrieve the Airline object selected.
         Airline myAirline = t5.Airlines[airlineCode];
