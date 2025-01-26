@@ -9,6 +9,7 @@ using PRG2_T13_03.Classes;
 using PRG2_T13_03.Classes.Flights;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.IO;
@@ -475,6 +476,32 @@ class Program
             else { Console.WriteLine("Invalid Flight Number. "); }
         }
     }
+
+    // PART 7 & 8 //
+    // DisplayFullFlightDetails()
+    private static void DisplayFullFlightDetails(Terminal t5, Flight flight)
+    {
+        // Header
+        Console.WriteLine(
+            "=============================================\r\n" +
+            $"Details of Flight {flight.FlightNumber}\r\n" +
+            "=============================================");
+
+        // Displays the full details of the selected flight.
+        Console.WriteLine(
+            $"Flight Number: {flight.FlightNumber}\r\n" +
+            $"Airline Name: {t5.Airlines[flight.FlightNumber.Substring(0, 2)].Name}\r\n" + // Gets the name from the Airline object
+            $"Origin: {flight.Origin}\r\n" +
+            $"Destination: {flight.Destination}\r\n" +
+            $"Expected Departure/ Arrival Time: {flight.ExpectedTime}\r\n" +
+            $"Status: {flight.Status}\r\n" +
+            $"Special Request Code: {GetSpecialRequestCode(flight)}\r\n" +
+            $"Boarding Gate: {GetFlightBoardingGate(t5, flight)}"
+            );
+    }
+
+
+
 
     // PART 7 //
     // DisplayAirlineFlights() 
