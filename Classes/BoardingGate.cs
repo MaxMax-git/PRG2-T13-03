@@ -21,12 +21,12 @@ namespace PRG2_T13_03.Classes
         // Methods
         public double CalculateFees()
         {
-            throw new NotImplementedException();
+            return Flight.CalculateFees();
         }
 
-        public override string ToString()
+        public override string ToString()   
         {
-            throw new NotImplementedException();
+            return $"GateName: {GateName}\tSupports CFFT: {SupportsCFFT}\tSupports DDJB: {SupportsDDJB}\tSupports LWTT: {SupportsLWTT}";
         }
 
         // Constructor

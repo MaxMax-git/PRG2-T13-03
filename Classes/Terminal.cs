@@ -49,7 +49,7 @@ namespace PRG2_T13_03.Classes
 
         public void PrintAirlineFees()
         {
-            throw new NotImplementedException();
+            throw new NotImplementedException(); // For advanced features
         }
 
         public override string ToString()
