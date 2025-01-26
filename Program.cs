@@ -500,9 +500,6 @@ class Program
             );
     }
 
-
-
-
     // PART 7 //
     // DisplayAirlineFlights() 
     private static void DisplayAirlineFlights(Terminal t5)
@@ -553,22 +550,9 @@ class Program
         // Retrieve the Flight object selected
         myFlight = t5.Flights[flightNo];
 
-        // Display the FULL Flight details.
-        // Header
-        Console.WriteLine(
-            "=============================================\r\n" +
-            $"Details of Flight {myFlight.FlightNumber}\r\n" +
-            "=============================================");
-
-        // Display selected flight details
-        Console.WriteLine(
-            $"Flight Number: {myFlight.FlightNumber}\r\n" +
-            $"Airline Name: {myAirline.Name}\r\n" +
-            $"Origin: {myFlight.Origin}\r\n" + 
-            $"Destination: {myFlight.Destination}\r\n" + 
-            $"Expected Departure/ Arrival Time: {myFlight.ExpectedTime}\r\n" +
-            $"Special Request Code: {GetSpecialRequestCode(myFlight)}\r\n" + 
-            $"Boarding Gate: {GetFlightBoardingGate(t5.BoardingGates, myFlight)}" );
+        // Display the FULL details of selected Flight.
+        DisplayFullFlightDetails(t5, myFlight);
+        
     } // end of this method, no indentatiom errors
 
     // PART 8 //
