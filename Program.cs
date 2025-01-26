@@ -14,6 +14,7 @@ using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http.Headers;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 
 // -- IMPORTANT NOTES (to be deleted after completion.) -- // 
@@ -60,7 +61,7 @@ class Program
             Console.WriteLine(msg);
             input = Console.ReadLine();
             input = (input != null) ? input.Trim(): input;
-            if (uppercase) { input = input.ToUpper(); }
+            if (uppercase) { input = input!.ToUpper(); }
             if (string.IsNullOrEmpty(input))
             {
                 Console.WriteLine("Input cannot be empty!");
@@ -92,7 +93,7 @@ class Program
     {
         CFFTFlight => bg.SupportsCFFT,
         DDJBFlight => bg.SupportsDDJB,
-        LWTTFlight => bg.SupportsCFFT,
+        LWTTFlight => bg.SupportsLWTT,
         _ => true,
     };
 
@@ -540,6 +541,8 @@ class Program
     {
         string format = "{0,-16}{1,-23}{2,-23}{3,-23}{4}";
         string option = "";
+        Airline myAirline; // initialised for retrieving & using the Airline object later.
+        Flight myFlight;
 
         // List all the Airlines Available
         ListAirlines(t5.Airlines);
@@ -548,7 +551,7 @@ class Program
         string airlineCode = ValidateInputFrom(t5.Airlines.Keys, "Enter Airline Code: ", "No matching airline code found.", true);
 
         // Retrieve the Airline object selected.
-        Airline myAirline = t5.Airlines[airlineCode];
+        myAirline = t5.Airlines[airlineCode];
 
         // Header
         Console.WriteLine(
@@ -578,9 +581,143 @@ class Program
         // Prompt the user to select a Flight Number
         string flightNo = PromptFlightNumberFromAirline(t5, "Choose an existing Flight to modify or delete: ", airlineCode);
 
-        // Option 1 -> Modify Flight
-        // Option 2 -> Delete Flight
-        option = Console.ReadLine()!;
+        // Retrieve the Flight object
+        myFlight = t5.Flights[flightNo];
+
+        // Prompt input to Modify/ Delete flight.
+        Console.WriteLine("1. Modify Flight");
+        Console.WriteLine("2. Delete Flight");
+        option = ValidateInputFrom(new string[] { "1", "2" }); // option can ONLY either by 1 / 2
+
+        if (option == "1") // if modify flight
+        {
+            // Display Options to modify flight
+            Console.Write(
+                "1. Modify Basic Information\r\n" +
+                "2. Modify Status\r\n" +
+                "3. Modify Special Request Code\r\n" +
+                "4. Modify Boarding Gate"
+                );
+
+            // Prompt user to enter options to modify flight
+            option = ValidateInputFrom(new string[] { "1", "2", "3", "4" });
+
+            if (option == "1") // Change Basic Flight Info
+            {
+                // Prompt new flight Origin
+                Console.Write("Enter new Origin: ");
+                string flightOrigin = Console.ReadLine()!;
+
+                // Prompt new Destination
+                Console.Write("Enter new Destination: ");
+                string flightDestination = Console.ReadLine()!;
+
+                // Get the new Flight's Expected Departure/ Arrival Time
+                DateTime flightDateTime;
+                string myDateTimeInput = "";
+                while (true)
+                {
+                    try
+                    {
+                        // Prompt new Expected Departure/ Arrival Time (dd/mm/yyyy hh:mm)
+                        Console.Write("Enter new Expected Departure/ Arrival Time (dd/MM/yyyy HH:mm): ");
+                        myDateTimeInput = Console.ReadLine()!;
+                        flightDateTime = Convert.ToDateTime(myDateTimeInput); ;
+                        break;
+                    }
+                    // check if input is Date Time
+                    catch (FormatException) { Console.WriteLine($"The string {myDateTimeInput} is not a valid Date Time."); }
+                    // checks for additional errors
+                    catch (Exception exception) { Console.WriteLine(exception.Message); }
+                }
+
+                // Change the basic info
+                myFlight.Origin = flightOrigin;
+                myFlight.Destination = flightDestination;
+                myFlight.ExpectedTime = flightDateTime;
+            }
+            else if (option == "2") // Change Flight Status
+            {
+                // Prompt new Flight Status
+                string flightStatus = ValidateInputFrom(
+                                        new string[] { "DELAYED", "BOARDING", "ON TIME", "SCHEDULED" },
+                                        "Enter new Status: ",
+                                        "Error. Invalid Status entered.", true);
+
+                // Uppercase the first letter of input and the rest is in lower case
+                flightStatus = flightStatus.Substring(0, 1) + flightStatus.Substring(1, flightStatus.Length - 1).ToLower();
+
+                // Update new flight status
+                myFlight.Status = flightStatus;
+            }
+            else if (option == "3") // Modify Special Request Code
+            {
+                // Values
+                string flightSRQ = "";
+                Flight updated;
+                bool match = true;
+
+                // Constructor dictionary reference
+                Dictionary<string, Func<string, string, string, DateTime, Flight>> flightConstructors =
+                    new Dictionary<string, Func<string, string, string, DateTime, Flight>>
+                    {
+                        { "CFFT", (a,b,c,d) => new CFFTFlight(a,b,c,d) },
+                        { "DDJB", (a,b,c,d) => new DDJBFlight(a,b,c,d) },
+                        { "LWTT", (a,b,c,d) => new LWTTFlight(a,b,c,d) },
+                        { "NONE", (a,b,c,d) => new NORMFlight(a,b,c,d) },
+                    };
+
+                // Check whether it already belongs to a boarding gate
+
+                while (true)
+                {
+                    // e.g. SQ 115 -> DDJB   
+                    // Prompt new Special Request Code
+                    flightSRQ = ValidateInputFrom(new string[] { "CFFT", "DDJB", "LWTT", "NONE" },
+                                            "Enter new Special Request Code (CFFT/DDJB/LWTT/None): ",
+                                            "Error. No matching Special Request Code found.", true);
+
+                    // Flight class with UPDATED Special Request Code
+                    updated = flightConstructors[flightSRQ](
+                                        myFlight.FlightNumber,
+                                        myFlight.Origin,
+                                        myFlight.Destination,
+                                        myFlight.ExpectedTime);
+
+                    foreach (BoardingGate bg in t5.BoardingGates.Values)
+                    {
+                        // Check for matching flight
+                        if (bg.Flight != null && bg.Flight.FlightNumber == myFlight.FlightNumber)
+                        {
+                            match = BoardingGateSupportsFlight(bg, updated);
+                            // Check if it voilates the boarding gate domains
+                            if (!match)
+                            {
+                                Console.WriteLine($"{bg.GateName} does not support Special Request Code ({flightSRQ})");
+                            }
+                            else { bg.Flight = updated; } // updates flight belonging to boarding gate
+                            break;
+                        }
+                    }
+                    if (match) { break; } // if no gates found or does not violate boarding gate SRQ
+                }
+
+                myFlight = updated;
+                // update the dictionaries 
+                t5.Flights[myFlight.FlightNumber] = myFlight;
+                myAirline.Flights[myFlight.FlightNumber] = myFlight;
+            }
+            else if (option == "4") // Modify Flight Boarding Gate
+            {
+                //
+            }
+            Console.WriteLine("Flight Updated!");
+            DisplayFullFlightDetails(t5, myFlight);
+        }
+        else if (option == "2") // if delete flight
+        {
+
+        }
     }
     
     static void Main(string[] args)
