@@ -426,28 +426,6 @@ class Program
     }
 
     // PART 7 & 8 //
-    // PromptAirLineCode(string message)
-    //   message -> Display message that prompts user to enter the Airline Code
-    // Prompt the user to enter the 2-Letter Airline Code (e.g. SQ or MH, etc.)
-    // 
-    // Returns valid Airline code.
-    private static string PromptAirLineCode(Dictionary<string, Airline> airlineDict, string message)
-    {
-        while (true)
-        {
-            Console.Write(message);
-            string airlineCode = Console.ReadLine()!.ToUpper().Trim(); // changes lowercase inputs to uppercase & remove whitespace
-
-            // Found Airline Code -> true
-            // No found Airline Code -> false
-            bool match = airlineDict.ContainsKey(airlineCode);
-
-            if (match) { return airlineCode; } // proceed if found Airline Code
-            Console.WriteLine("No matching airline code found."); // else prompt again.
-        }
-    }
-
-    // PART 7 & 8 //
     // PromptFlighNumberFromAirline(string message, string airlineCode)
     private static string PromptFlightNumberFromAirline(Terminal t5, string message, string airlineCode)
     {
@@ -514,7 +492,8 @@ class Program
         ListAirlines(t5.Airlines);
 
         // Prompt the user to enter the 2-Letter Airline Code (e.g. SQ or MH, etc.)
-        string airlineCode = PromptAirLineCode(t5.Airlines, "Enter airline code: ");
+        // string airlineCode = PromptAirLineCode(t5.Airlines, "Enter airline code: ");
+        string airlineCode = ValidateInputFrom(t5.Airlines.Keys, "Enter Airline Code: ", "No matching airline code found.", true);
 
         // Retrieve the Airline object selected.
         myAirline = t5.Airlines[airlineCode];
@@ -566,7 +545,7 @@ class Program
         ListAirlines(t5.Airlines);
 
         // Prompt the user to enter the 2-Letter Airline Code (e.g. SQ or MH, etc.)
-        string airlineCode = PromptAirLineCode(t5.Airlines, "Enter airline code: ");
+        string airlineCode = ValidateInputFrom(t5.Airlines.Keys, "Enter Airline Code: ", "No matching airline code found.", true);
 
         // Retrieve the Airline object selected.
         Airline myAirline = t5.Airlines[airlineCode];
