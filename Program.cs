@@ -264,7 +264,7 @@ class Program
     private static Dictionary<string, Action<Terminal>> options = new Dictionary<string, Action<Terminal>>
     {
         {"1", t => ListAllFlights(t)},
-        {"2", t => ListAllBoardingGates(t)},
+        {"2", t => ListAllBoardingGates(t.BoardingGates)},
         {"3", t => AssignFlightToBoardingGate(t)},
         //{"4", () => CreateFlight()},
         {"5", t => DisplayAirlineFlights(t)},
@@ -325,7 +325,7 @@ class Program
 
     // PART 4 //
     // List all the boarding gates
-    private static void ListAllBoardingGates(Terminal t5)
+    private static void ListAllBoardingGates(Dictionary<string, BoardingGate> boardingDict)
     {
         string format = "{0,-16}{1,-23}{2,-23}{3,-23}{4}"; // format for string (string interpolation)
         // Header
@@ -336,7 +336,7 @@ class Program
 
         // Display the Boarding Gates & Special Request Codes, Flight Number Assigned 
         Console.WriteLine(format, "Gate Name", "DDJB", "CFFT", "LWTT", "Assigned Flight Number");
-        foreach (KeyValuePair<string, BoardingGate> kvp in t5.BoardingGates)
+        foreach (KeyValuePair<string, BoardingGate> kvp in boardingDict)
         {
             BoardingGate boardingGate = kvp.Value;
             Console.WriteLine(format, 
