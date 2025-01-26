@@ -98,10 +98,10 @@ class Program
 
     // GetFlightBoardingGate ( Flight myFlight )
     //  Returns the Boarding Gate name that fligt belongs to. If none, return "None"
-    private static string GetFlightBoardingGate(Terminal t5, Flight flight)
+    private static string GetFlightBoardingGate(Dictionary<string, BoardingGate> boardingDict, Flight flight)
     {
         // Iterate thru the boarding gate dictionary.
-        foreach (BoardingGate boardingGate in t5.BoardingGates.Values)
+        foreach (BoardingGate boardingGate in boardingDict.Values)
         {
             // If flight allocated to boardingGate matches myFlight
             if (boardingGate.Flight == flight)
@@ -496,7 +496,7 @@ class Program
             $"Expected Departure/ Arrival Time: {flight.ExpectedTime}\r\n" +
             $"Status: {flight.Status}\r\n" +
             $"Special Request Code: {GetSpecialRequestCode(flight)}\r\n" +
-            $"Boarding Gate: {GetFlightBoardingGate(t5, flight)}"
+            $"Boarding Gate: {GetFlightBoardingGate(t5.BoardingGates, flight)}"
             );
     }
 
@@ -568,7 +568,7 @@ class Program
             $"Destination: {myFlight.Destination}\r\n" + 
             $"Expected Departure/ Arrival Time: {myFlight.ExpectedTime}\r\n" +
             $"Special Request Code: {GetSpecialRequestCode(myFlight)}\r\n" + 
-            $"Boarding Gate: {GetFlightBoardingGate(t5, myFlight)}" );
+            $"Boarding Gate: {GetFlightBoardingGate(t5.BoardingGates, myFlight)}" );
     } // end of this method, no indentatiom errors
 
     // PART 8 //
