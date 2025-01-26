@@ -28,11 +28,6 @@ class Program
     private static string flightsFileName = dataFolderName + "flights.csv";
 
     // Values
-    private static Terminal t5 = new Terminal("Terminal5");
-
-    private static Dictionary<string, Airline> airlineDict = new Dictionary<string, Airline>();
-    private static Dictionary<string, BoardingGate> boardingGateDict = new Dictionary<string, BoardingGate>();
-    private static Dictionary<string, Flight> flightDict = new Dictionary<string, Flight>();
 
     // Utility
 
@@ -54,49 +49,55 @@ class Program
     private static string ValidateInputFrom(ICollection<string> validInputs, string msg = "Please select your option:", string err = "Invalid option.")
     {
         string? input = null;
-        while (input == null || !validInputs.Contains(input))
+        while (string.IsNullOrEmpty(input) || !validInputs.Contains(input))
         {
             Console.WriteLine(msg);
             input = Console.ReadLine();
             input = (input != null) ? input.Trim(): input;
-            if (input == null || !validInputs.Contains(input)) Console.WriteLine(err);
+            if (string.IsNullOrEmpty(input))
+            {
+                Console.WriteLine("Input cannot be empty!");
+            }
+            else if (!validInputs.Contains(input))
+            {
+                Console.WriteLine(err);
+            }
         }
         return input;
-    }   
+    }
 
     // GetSpecialRequestCode( Flight flight )
     //  Returns the special request code of the flight as a string
     //
     // Possible Values:
     //  CFFT, DDJB, LWTT, None
-    private static string GetSpecialRequestCode(Flight flight)
+    private static string GetSpecialRequestCode(Flight flight) => flight switch
     {
-        return (flight is CFFTFlight) ? "CFFT" :
-               (flight is DDJBFlight) ? "DDJB" :
-               (flight is LWTTFlight) ? "LWTT" :
-               "None";
-    }
+        CFFTFlight => "CFFT",
+        DDJBFlight => "DDJB",
+        LWTTFlight => "LWTT",
+        _ => "None",
+    };
 
     // BoardingGateSupportsFlight( BoardingGate bg, Flight flight )
     //  Returns whether a boarding gate supports a flight depending on the flight's special request code
-    private static bool BoardingGateSupportsFlight(BoardingGate bg, Flight flight)
+    private static bool BoardingGateSupportsFlight(BoardingGate bg, Flight flight) => flight switch 
     {
-        return 
-            (flight is CFFTFlight) ? bg.SupportsCFFT :
-            (flight is DDJBFlight) ? bg.SupportsDDJB :
-            (flight is LWTTFlight) ? bg.SupportsCFFT :
-            true;
-    }
+        CFFTFlight => bg.SupportsCFFT,
+        DDJBFlight => bg.SupportsDDJB,
+        LWTTFlight => bg.SupportsCFFT,
+        _ => true,
+    };
 
     // GetFlightBoardingGate ( Flight myFlight )
     //  Returns the Boarding Gate name that fligt belongs to. If none, return "None"
-    private static string GetFlightBoardingGate(Flight myFlight)
+    private static string GetFlightBoardingGate(Terminal t5, Flight flight)
     {
         // Iterate thru the boarding gate dictionary.
-        foreach (BoardingGate boardingGate in boardingGateDict.Values)
+        foreach (BoardingGate boardingGate in t5.BoardingGates.Values)
         {
             // If flight allocated to boardingGate matches myFlight
-            if (boardingGate.Flight == myFlight)
+            if (boardingGate.Flight == flight)
             {
                 return boardingGate.GateName; // returns name of BoardingGate
             }
@@ -107,7 +108,7 @@ class Program
     // PART 1 //
 
     // pt1. -> Load the airlines.csv file.
-    private static void LoadAirlines()
+    private static void LoadAirlines(Terminal t5)
     {
         // Header
         Console.WriteLine("Loading Airlines...");
@@ -134,7 +135,6 @@ class Program
                 // Add the Airlines objects into an Airline Dictionary, under Terminal
                 if (t5.AddAirline(airline))
                 {
-                    airlineDict.Add(details[1], airline);
                     count++; // Increment by 1
                 }
             }
@@ -145,7 +145,7 @@ class Program
     }
 
     // pt1. -> Load the boardinggates.csv file
-    private static void LoadBoardingGates()
+    private static void LoadBoardingGates(Terminal t5)
     {
         // Header
         Console.WriteLine("Loading Boarding Gates...");
@@ -176,7 +176,6 @@ class Program
                 // Add the Boarding Gate objects into a Boarding Gate Dictionary
                 if (t5.AddBoardingGate(boardingGate))
                 {
-                    boardingGateDict.Add(details[0], boardingGate);
                     count++; // Increment by 1
                 }
             }
@@ -189,7 +188,7 @@ class Program
     // PART 2 //
 
     // pt2. -> Load flights.csv file
-    private static void LoadFlights()
+    private static void LoadFlights(Terminal t5)
     {
         // Header
         Console.WriteLine("Loading Flights...");
@@ -235,15 +234,15 @@ class Program
 
                 // Create the flight
                 Flight flight = flightConstructors[specialRequest](
-                    details[0],
-                    details[1],
-                    details[2],
-                    expectedTime);
+                    details[0], // Flight No
+                    details[1], // Flight Origin
+                    details[2], // Destination
+                    expectedTime); // Expected Time
 
                 // Add the flight objects into their respective airlines
                 if (t5.Airlines[airlineCode].AddFlight(flight)) 
                 {
-                    flightDict.Add(details[0], flight);
+                    t5.Flights.TryAdd(details[0], flight);
                     count++;
                 };
             }
@@ -256,16 +255,16 @@ class Program
     // PART 3 //
 
     // Option dictionary reference
-    private static Dictionary<string, Action> options = new Dictionary<string, Action>
+    private static Dictionary<string, Action<Terminal>> options = new Dictionary<string, Action<Terminal>>
     {
-        {"1", () => ListAllFlights()},
-        {"2", () => ListAllBoardingGates()},
-        {"3", () => AssignFlightToBoardingGate()},
+        {"1", t => ListAllFlights(t)},
+        {"2", t => ListAllBoardingGates(t)},
+        {"3", t => AssignFlightToBoardingGate(t)},
         //{"4", () => CreateFlight()},
-        {"5", () => DisplayAirlineFlights()},
-        {"6", () => ModifyFlightDetails()},
+        {"5", t => DisplayAirlineFlights(t)},
+        {"6", t => ModifyFlightDetails(t)},
         //{"7", () => DisplayFlightSchedule()},
-        {"0", () => {
+        {"0", t => {
             Console.Write("Goodbye!");
             Environment.Exit(0);
         } }, // Closes the program
@@ -292,7 +291,7 @@ class Program
         return ValidateInputFrom(options.Keys);
     }
 
-    private static void ListAllFlights()
+    private static void ListAllFlights(Terminal t5)
     {
         string format = "{0,-16}{1,-23}{2,-23}{3,-23}{4}";
         // Header
@@ -303,12 +302,12 @@ class Program
 
         // Display the Flights with their basic Information.
         Console.WriteLine(format, "Flight Number", "Airline Name", "Origin", "Destination", "Expected Departure/Arrival Time");
-        foreach (KeyValuePair<string, Flight> kvp in flightDict)
+        foreach (KeyValuePair<string, Flight> kvp in t5.Flights)
         {
             Flight flight = kvp.Value;
             Console.WriteLine(format,
                 flight.FlightNumber,
-                airlineDict[flight.FlightNumber.Substring(0, 2)].Name, // Gets the name from the Airline object
+                t5.Airlines[flight.FlightNumber.Substring(0, 2)].Name, // Gets the name from the Airline object
                 flight.Origin,
                 flight.Destination,
                 flight.ExpectedTime
@@ -320,7 +319,7 @@ class Program
 
     // PART 4 //
     // List all the boarding gates
-    private static void ListAllBoardingGates()
+    private static void ListAllBoardingGates(Terminal t5)
     {
         string format = "{0,-16}{1,-23}{2,-23}{3,-23}{4}"; // format for string (string interpolation)
         // Header
@@ -331,7 +330,7 @@ class Program
 
         // Display the Boarding Gates & Special Request Codes, Flight Number Assigned 
         Console.WriteLine(format, "Gate Name", "DDJB", "CFFT", "LWTT", "Assigned Flight Number");
-        foreach (KeyValuePair<string, BoardingGate> kvp in boardingGateDict)
+        foreach (KeyValuePair<string, BoardingGate> kvp in t5.BoardingGates)
         {
             BoardingGate boardingGate = kvp.Value;
             Console.WriteLine(format, 
@@ -345,17 +344,22 @@ class Program
     }
 
     // PART 5 //
-    private static void AssignFlightToBoardingGate()
+    private static void AssignFlightToBoardingGate(Terminal t5)
     {
         Console.WriteLine(
             "=============================================  \r\n" +
             "Assign a Boarding Gate to a Flight             \r\n" +
             "=============================================");
-        Flight flight = flightDict[ValidateInputFrom(flightDict.Keys, "Enter Flight Number:", "Invalid Flight Number!")];
+
+        // Prompts the user for the flight number, invalidating if not found
+        // Afterwards, lookup for the flight through the terminal's flight dictionary
+        Flight flight = t5.Flights[ValidateInputFrom(t5.Flights.Keys, "Enter Flight Number:", "Invalid Flight Number!")];
         BoardingGate boardingGate;
         while (true)
         {
-            boardingGate = boardingGateDict[ValidateInputFrom(boardingGateDict.Keys, "Enter Boarding Gate Name:", "Invalid Boarding Gate Name!")];
+            // Prompts the user for the boarding gate name, invalidating if not found
+            // Afterwards, lookup for the boarding gate through the terminal's boarding gate dictionary
+            boardingGate = t5.BoardingGates[ ValidateInputFrom(t5.BoardingGates.Keys, "Enter Boarding Gate Name:", "Invalid Boarding Gate Name!") ];
             if (boardingGate.Flight != null)
             {
                 Console.WriteLine($"Boarding Gate {boardingGate.GateName} is already assigned to flight {flight.FlightNumber}!");
@@ -394,7 +398,7 @@ class Program
 
     // PART 7 & 8 //
     // ListAirLines() -> Shows all the Airline Name & Code.
-    private static void ListAirlines()
+    private static void ListAirlines(Terminal t5)
     {
         string format = "{0,-16}{1}";
         // Header
@@ -405,7 +409,7 @@ class Program
 
         // Display all Airlines Available
         Console.WriteLine(format, "Airline Code", "Airline Name");
-        foreach (Airline airline in airlineDict.Values)
+        foreach (Airline airline in t5.Airlines.Values)
         {
             Console.WriteLine(format,
                 airline.Code,
@@ -420,7 +424,7 @@ class Program
     // Prompt the user to enter the 2-Letter Airline Code (e.g. SQ or MH, etc.)
     // 
     // Returns valid Airline code.
-    private static string PromptAirLineCode(string message)
+    private static string PromptAirLineCode(Terminal t5, string message)
     {
         while (true)
         {
@@ -429,7 +433,7 @@ class Program
 
             // Found Airline Code -> true
             // No found Airline Code -> false
-            bool match = airlineDict.ContainsKey(airlineCode);
+            bool match = t5.Airlines.ContainsKey(airlineCode);
 
             if (match) { return airlineCode; } // proceed if found Airline Code
             Console.WriteLine("No matching airline code found."); // else prompt again.
@@ -438,7 +442,7 @@ class Program
 
     // PART 7 & 8 //
     // PromptFlighNumberFromAirline(string message, string airlineCode)
-    private static string PromptFlightNumberFromAirline(string message, string airlineCode)
+    private static string PromptFlightNumberFromAirline(Terminal t5, string message, string airlineCode)
     {
         // Prompt the user to select a Flight Number
         while (true)
@@ -448,14 +452,19 @@ class Program
 
             // Found flight Code -> true
             // No found flight Code -> false
-            bool match = flightDict.ContainsKey(flightNo);
+            bool match = t5.Flights.ContainsKey(flightNo);
 
             // Check for Valid flight code
             if (match)
             {
                 // AND check whether flight code is from CHOSEN Airline
-                if (flightNo.Substring(0, 2) == airlineCode) { return flightNo; }
-                else { Console.WriteLine($"Invalid, {flightNo} not from {airlineDict[airlineCode].Name}"); }
+                if (flightNo.Substring(0, 2) == airlineCode) { 
+                    return flightNo; 
+                }
+                else 
+                {
+                    Console.WriteLine($"Invalid, {flightNo} not from {t5.Airlines[airlineCode].Name}"); 
+                }
             }
             else { Console.WriteLine("Invalid Flight Number. "); }
         }
@@ -463,7 +472,7 @@ class Program
 
     // PART 7 //
     // DisplayAirlineFlights() 
-    private static void DisplayAirlineFlights()
+    private static void DisplayAirlineFlights(Terminal t5)
     {
         string format = "{0,-16}{1,-23}{2,-23}{3,-23}{4}";
 
@@ -472,13 +481,13 @@ class Program
         Flight myFlight; // initialise to retrieve later for further use.
 
         // List all the Airlines available
-        ListAirlines();
+        ListAirlines(t5);
 
         // Prompt the user to enter the 2-Letter Airline Code (e.g. SQ or MH, etc.)
-        string airlineCode = PromptAirLineCode("Enter airline code: ");
+        string airlineCode = PromptAirLineCode(t5, "Enter airline code: ");
 
         // Retrieve the Airline object selected.
-        myAirline = airlineDict[airlineCode];
+        myAirline = t5.Airlines[airlineCode];
 
         // Header
         Console.WriteLine(
@@ -488,7 +497,7 @@ class Program
 
         // Display the Flights with their basic Information.
         Console.WriteLine(format, "Flight Number", "Airline Name", "Origin", "Destination", "Expected Departure/Arrival Time");
-        foreach (Flight flight in flightDict.Values)
+        foreach (Flight flight in t5.Flights.Values)
         {
             string flightAirline = flight.FlightNumber.Substring(0, 2);
 
@@ -497,7 +506,7 @@ class Program
             {
                 Console.WriteLine(format,
                     flight.FlightNumber,
-                    airlineDict[flightAirline].Name, // Gets the name from the Airline object
+                    t5.Airlines[flightAirline].Name, // Gets the name from the Airline object
                     flight.Origin,
                     flight.Destination,
                     flight.ExpectedTime
@@ -506,10 +515,10 @@ class Program
         }
 
         // Prompt the user to select a Flight Number
-        string flightNo = PromptFlightNumberFromAirline("Enter Flight Number: ", airlineCode);
+        string flightNo = PromptFlightNumberFromAirline(t5, "Enter Flight Number: ", airlineCode);
 
         // Retrieve the Flight object selected
-        myFlight = flightDict[flightNo];
+        myFlight = t5.Flights[flightNo];
 
         // Display the FULL Flight details.
         // Header
@@ -526,25 +535,24 @@ class Program
             $"Destination: {myFlight.Destination}\r\n" + 
             $"Expected Departure/ Arrival Time: {myFlight.ExpectedTime}\r\n" +
             $"Special Request Code: {GetSpecialRequestCode(myFlight)}\r\n" + 
-            $"Boarding Gate: {GetFlightBoardingGate(myFlight)}" );
+            $"Boarding Gate: {GetFlightBoardingGate(t5, myFlight)}" );
     } // end of this method, no indentatiom errors
 
     // PART 8 //
     // ModifyFlightDetails() -> 
-    private static void ModifyFlightDetails()
+    private static void ModifyFlightDetails(Terminal t5)
     {
         string format = "{0,-16}{1,-23}{2,-23}{3,-23}{4}";
         string option = "";
-        Airline myAirline; // initialised for retrieving & using the Airline object later.
 
         // List all the Airlines Available
-        ListAirlines();
+        ListAirlines(t5);
 
         // Prompt the user to enter the 2-Letter Airline Code (e.g. SQ or MH, etc.)
-        string airlineCode = PromptAirLineCode("Enter airline code: ");
+        string airlineCode = PromptAirLineCode(t5, "Enter airline code: ");
 
         // Retrieve the Airline object selected.
-        myAirline = airlineDict[airlineCode];
+        Airline myAirline = t5.Airlines[airlineCode];
 
         // Header
         Console.WriteLine(
@@ -554,7 +562,7 @@ class Program
 
         // Display the Flights with their basic Information.
         Console.WriteLine(format, "Flight Number", "Airline Name", "Origin", "Destination", "Expected Departure/Arrival Time");
-        foreach (Flight flight in flightDict.Values)
+        foreach (Flight flight in t5.Flights.Values)
         {
             string flightAirline = flight.FlightNumber.Substring(0, 2);
 
@@ -563,7 +571,7 @@ class Program
             {
                 Console.WriteLine(format,
                     flight.FlightNumber,
-                    airlineDict[flightAirline].Name, // Gets the name from the Airline object
+                    t5.Airlines[flightAirline].Name, // Gets the name from the Airline object
                     flight.Origin,
                     flight.Destination,
                     flight.ExpectedTime
@@ -572,35 +580,32 @@ class Program
         }
 
         // Prompt the user to select a Flight Number
-        string flightNo = PromptFlightNumberFromAirline("Choose an existing Flight to modify or delete: ", airlineCode);
+        string flightNo = PromptFlightNumberFromAirline(t5, "Choose an existing Flight to modify or delete: ", airlineCode);
 
         // Option 1 -> Modify Flight
         // Option 2 -> Delete Flight
         option = Console.ReadLine()!;
     }
-
-
-
-
-
-
+    
     static void Main(string[] args)
     {
+        Terminal t5 = new Terminal("Terminal5");
+
         // Load the Airlines
-        LoadAirlines();
+        LoadAirlines(t5);
 
         // Load the Boarding Gates
-        LoadBoardingGates();
+        LoadBoardingGates(t5);
 
         // Load flights
-        LoadFlights();
+        LoadFlights(t5);
 
         // Program start
         while (true)
         {
             Console.Write("\n\n\n\n");
             string option = ShowMenu();
-            options[option]();
+            options[option](t5);
         }
     }
 }
