@@ -269,7 +269,7 @@ class Program
         {"2", t => ListAllBoardingGates(t.BoardingGates)},
         {"3", t => AssignFlightToBoardingGate(t)},
         //{"4", () => CreateFlight()},
-        {"5", t => DisplayAirlineFlights(t)},
+        {"5", t => DisplayAirlineFlightFullDetails(t)},
         {"6", t => ModifyFlightDetails(t)},
         //{"7", () => DisplayFlightSchedule()},
         {"0", t => {
@@ -514,7 +514,7 @@ class Program
 
     // PART 7 //
     // DisplayAirlineFlights() 
-    private static void DisplayAirlineFlights(Terminal t5)
+    private static void DisplayAirlineFlightFullDetails(Terminal t5)
     {
         // Values
         Airline myAirline; // initialise to retrieve later for further use.
