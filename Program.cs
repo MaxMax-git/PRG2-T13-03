@@ -4,6 +4,7 @@
 // Partner Name	    : Low Yu Wen Max
 //==========================================================
 
+using Microsoft.VisualBasic.FileIO;
 using PRG2_T13_03;
 using PRG2_T13_03.Classes;
 using PRG2_T13_03.Classes.Flights;
@@ -14,6 +15,7 @@ using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http.Headers;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 
@@ -38,13 +40,18 @@ class Program
 
     // Utility
 
-    // ValidateInputFrom( ICollection<string> validInputs, string? msg, string? err )
+    // ValidateInputFrom( ICollection<string> validInputs, string? msg, string? err, int casing )
     //  Prompts user for input, and checks if said input is within valid inputs
     //      Done through: validInputs.Contains()
     //
     //  Returns the user's input if valid
     //
     //  Optional message/error can be added
+    //
+    //  Optional int can be passed to determine casing of the input (to check against the valid inputs)
+    //  0 - No change (default)
+    //  More than 0 - Uppercase
+    //  Less than 0 - Lowercase
     //
     //  Basic usage:
     //      string input = ValidateInputFrom(new string[] { "yes", "no" }, "Do you like apples? ")
@@ -53,15 +60,16 @@ class Program
     // Note:
     //  Inputs are trimmed
     //  Messages/Errors uses Console.WriteLine()
-    private static string ValidateInputFrom(ICollection<string> validInputs, string msg = "Please select your option:", string err = "Invalid option.", bool uppercase = false)
+    private static string ValidateInputFrom(ICollection<string> validInputs, string msg = "Please select your option:", string err = "Invalid option.", int casing = 0)
     {
         string? input = null;
         while (string.IsNullOrEmpty(input) || !validInputs.Contains(input))
         {
             Console.WriteLine(msg);
-            input = Console.ReadLine();
-            input = (input != null) ? input.Trim(): input;
-            if (uppercase) { input = input!.ToUpper(); }
+            input = Console.ReadLine() ?? "";
+            input = input.Trim();
+            if (casing > 0) input = input.ToUpper();
+            else if (casing < 0) input = input.ToLower();
             if (string.IsNullOrEmpty(input))
             {
                 Console.WriteLine("Input cannot be empty!");
@@ -79,12 +87,12 @@ class Program
     //
     // Possible Values:
     //  CFFT, DDJB, LWTT, None
-    private static string GetSpecialRequestCode(Flight flight) => flight switch
+    private static string GetSpecialRequestCode(Flight flight, bool emptyStringIfNone = false) => flight switch
     {
         CFFTFlight => "CFFT",
         DDJBFlight => "DDJB",
         LWTTFlight => "LWTT",
-        _ => "None",
+        _ => (emptyStringIfNone) ? "" : "None",
     };
 
     // BoardingGateSupportsFlight( BoardingGate bg, Flight flight )
@@ -99,10 +107,10 @@ class Program
 
     // GetFlightBoardingGate ( Flight myFlight )
     //  Returns the Boarding Gate name that fligt belongs to. If none, return "None"
-    private static string GetFlightBoardingGate(Dictionary<string, BoardingGate> boardingDict, Flight flight)
+    private static string GetFlightBoardingGate(Terminal t5, Flight flight)
     {
         // Iterate thru the boarding gate dictionary.
-        foreach (BoardingGate boardingGate in boardingDict.Values)
+        foreach (BoardingGate boardingGate in t5.BoardingGates.Values)
         {
             // If flight allocated to boardingGate matches myFlight
             if (boardingGate.Flight == flight)
@@ -231,7 +239,7 @@ class Program
                 string[] details = line.Split(',');
 
                 // For increased clarity
-                string airlineCode = details[0].Substring(0,2);
+                string airlineCode = details[0][0..2];
                 DateTime expectedTime = Convert.ToDateTime(details[3]);
                 string specialRequest = details[4].Trim(); // to account for whitespace
 
@@ -266,9 +274,9 @@ class Program
     private static Dictionary<string, Action<Terminal>> options = new Dictionary<string, Action<Terminal>>
     {
         {"1", t => ListAllFlights(t)},
-        {"2", t => ListAllBoardingGates(t.BoardingGates)},
+        {"2", t => ListAllBoardingGates(t)},
         {"3", t => AssignFlightToBoardingGate(t)},
-        //{"4", () => CreateFlight()},
+        {"4", t => CreateFlight(t)},
         {"5", t => DisplayAirlineFlightFullDetails(t)},
         {"6", t => ModifyFlightDetails(t)},
         //{"7", () => DisplayFlightSchedule()},
@@ -296,6 +304,10 @@ class Program
             "6. Modify Flight Details                                   \r\n" +
             "7. Display Flight Schedule                                 \r\n" +
             "0. Exit                                                    \r\n");
+
+        // Prompts the user for an option,
+        // reprompting if the value is not 0-7
+        // (which are the keys of the option Dictionary)
         return ValidateInputFrom(options.Keys);
     }
 
@@ -313,9 +325,13 @@ class Program
         foreach (KeyValuePair<string, Flight> kvp in t5.Flights)
         {
             Flight flight = kvp.Value;
+
+            // Prints the flight with the format
             Console.WriteLine(format,
                 flight.FlightNumber,
-                t5.Airlines[flight.FlightNumber.Substring(0, 2)].Name, // Gets the name from the Airline object
+                // Get the substring of the flight number
+                // Gets the name from the Airline object
+                t5.Airlines[flight.FlightNumber[0..2]].Name, 
                 flight.Origin,
                 flight.Destination,
                 flight.ExpectedTime
@@ -327,7 +343,7 @@ class Program
 
     // PART 4 //
     // ListAllBoardingGates() -> List info about boarding gates. (Special Request Code + Flight assigned)
-    private static void ListAllBoardingGates(Dictionary<string, BoardingGate> boardingDict)
+    private static void ListAllBoardingGates(Terminal t5)
     {
         string format = "{0,-16}{1,-23}{2,-23}{3,-23}{4}"; // format for string (string interpolation)
         // Header
@@ -338,9 +354,8 @@ class Program
 
         // Display the Boarding Gates & Special Request Codes, Flight Number Assigned 
         Console.WriteLine(format, "Gate Name", "DDJB", "CFFT", "LWTT", "Assigned Flight Number");
-        foreach (KeyValuePair<string, BoardingGate> kvp in boardingDict)
+        foreach (BoardingGate boardingGate in t5.BoardingGates.Values)
         {
-            BoardingGate boardingGate = kvp.Value;
             Console.WriteLine(format, 
                 boardingGate.GateName,
                 boardingGate.SupportsDDJB,
@@ -404,6 +419,162 @@ class Program
         boardingGate.Flight = flight;
 
         Console.WriteLine($"Flight {flight.FlightNumber} has been assigned to Boarding Gate {boardingGate.GateName}!");
+    }
+
+    // PART 6 //
+    private static string PromptNewFlightNumber(Terminal t5)
+    {
+        string? flightNo = null;
+        while (true)
+        {
+            Console.Write("Enter Flight Number: ");
+            flightNo = Console.ReadLine() ?? "";
+            flightNo = flightNo.Trim().ToUpper();
+
+            // Warn if empty
+            if (string.IsNullOrEmpty(flightNo)) Console.WriteLine("Flight number cannot be empty!");
+
+            // Warn if the flight number already exists
+            else if (t5.Flights.ContainsKey(flightNo)) Console.WriteLine("Another flight exists with the same flight number!");
+
+            // Warn if the flight number is not the correct format
+            else if (flightNo.Length != 6 || flightNo[2] != ' ') Console.WriteLine("Flight number must follow the format! e.g. SQ 123");
+
+            // Warn if flight number does not correspond to an existing airline
+            else if (!t5.Airlines.ContainsKey(flightNo[0..2])) Console.WriteLine("Flight number must belong to an existing airline! e.g. SQ 123");
+
+            // Warn if flight number does not end off with 3 digits
+            else if (!flightNo[3..].All(char.IsDigit)) Console.WriteLine("Flight number must end off with 3 digits! e.g. SQ 123");
+            else return flightNo;
+        }
+    }
+
+    private static string PromptLocation(string locationString, bool specifyNew = false)
+    {
+        string? location = null;
+        while (true)
+        {
+            Console.Write($"Enter{(specifyNew ? " new " : " ")}{locationString}: ");
+            location = Console.ReadLine() ?? "";
+
+            // Warn if empty
+            if (string.IsNullOrEmpty(location)) Console.WriteLine($"{locationString} cannot be empty!");
+
+            // Warn if origin not in correct format
+            if (!Regex.IsMatch(location, @"^[A-Za-z\s]+ \([A-Za-z]{3}\)$")) Console.WriteLine($"{locationString} must follow the format! e.g. Singapore (SIN)");
+            else return (location.ToUpper()[0] + location[1..^5].ToLower() + location[^5..].ToUpper()); // Proper capitalizations
+        }
+    }
+
+    private static DateTime PromptExpectedTime(bool specifyNew = false)
+    {
+        DateTime flightDateTime;
+        string myDateTimeInput = "";
+        while (true)
+        {
+            try
+            {
+                // Prompt new Expected Departure/ Arrival Time (dd/mm/yyyy hh:mm)
+                Console.Write($"Enter{(specifyNew ? " new " : " ")}Expected Departure/Arrival Time (dd/MM/yyyy HH:mm): ");
+                myDateTimeInput = Console.ReadLine() ?? "";
+                flightDateTime = Convert.ToDateTime(myDateTimeInput); ;
+                return flightDateTime;
+            }
+            // check if input is Date Time
+            catch (FormatException) { Console.WriteLine($"The string {myDateTimeInput} is not a valid Date Time."); }
+            // checks for additional errors
+            catch (Exception exception) { Console.WriteLine(exception.Message); }
+        }
+    }
+
+    private static void CreateFlight(Terminal t5)
+    {
+        Console.WriteLine(
+            "=============================================  \r\n" +
+            "Create Flight                                  \r\n" +
+            "=============================================");
+
+        int count = 0;
+
+        while (true)
+        {
+            // Prompt for flight info
+            string flightNo = PromptNewFlightNumber(t5);
+            string origin = PromptLocation("Origin");
+            string destination = PromptLocation("Destination");
+            DateTime expectedTime = PromptExpectedTime();
+
+            // Constructor dictionary reference
+            Dictionary<string, Func<string, string, string, DateTime, Flight>> flightConstructors =
+                new Dictionary<string, Func<string, string, string, DateTime, Flight>>
+                {
+                        { "CFFT", (a,b,c,d) => new CFFTFlight(a,b,c,d) },
+                        { "DDJB", (a,b,c,d) => new DDJBFlight(a,b,c,d) },
+                        { "LWTT", (a,b,c,d) => new LWTTFlight(a,b,c,d) },
+                        { "NONE", (a,b,c,d) => new NORMFlight(a,b,c,d) },
+                };
+
+            string flightSRQ = "NONE";
+
+            // Prompt whether to add a special request
+            if (
+            ValidateInputFrom(
+                new string[] { "Y", "N" },
+                $"Do you want a special request for your flight? (Y/N): ",
+                casing: 1
+            ) == "Y")
+            {
+                // Prompt new Special Request Code
+                flightSRQ = ValidateInputFrom(new string[] { "CFFT", "DDJB", "LWTT", "NONE" },
+                                        "Enter new Special Request Code (CFFT/DDJB/LWTT/None): ",
+                                        "Error. No matching Special Request Code found.", 1);
+            }
+
+            // Initialise flight
+            Flight flight = flightConstructors[flightSRQ](
+                    flightNo,
+                    origin,
+                    destination,
+                    expectedTime);
+
+            Airline airline = t5.Airlines[flightNo[0..2]];
+
+            // Add the flight to both flight dictionary and their respective airline
+            if (airline.AddFlight(flight))
+            {
+                t5.Flights.TryAdd(flightNo, flight);
+            }
+
+            // Append to flights.csv
+            using (StreamWriter sw = new StreamWriter(flightsFileName, true))
+            {
+                sw.WriteLine($"{flightNo},{origin},{destination},{expectedTime.ToString("hh:mm tt")},{GetSpecialRequestCode(flight, true)}");
+            }
+
+            // Increment flight counter
+            count++;
+
+            Console.WriteLine("New flight added to the terminal");
+            Console.WriteLine(
+                $"Flight Number: {flight.FlightNumber}\r\n" +
+                $"Airline Name: {airline.Name}\r\n" + // Gets the name from the Airline object
+                $"Origin: {flight.Origin}\r\n" +
+                $"Destination: {flight.Destination}\r\n" +
+                $"Expected Departure/Arrival Time: {flight.ExpectedTime}\r\n" +
+                $"Status: {flight.Status}\r\n" +
+                $"Special Request Code: {GetSpecialRequestCode(flight)}\r\n" +
+                $"Boarding Gate: {GetFlightBoardingGate(t5, flight)}");
+
+            // Prompt for another flight, else break out of loop
+            if (
+            ValidateInputFrom(
+                new string[] { "Y", "N" },
+                "Would you like to add another flight? (Y/N): ",
+                casing: 1
+            ) == "N") break;
+        }
+
+        Console.WriteLine($"{count} flight{((count>1)?"s":"")} succesfully added!");
     }
 
     // PART 7 & 8 //
@@ -498,13 +669,13 @@ class Program
         // Displays the full details of the selected flight.
         Console.WriteLine(
             $"Flight Number: {flight.FlightNumber}\r\n" +
-            $"Airline Name: {t5.Airlines[flight.FlightNumber.Substring(0, 2)].Name}\r\n" + // Gets the name from the Airline object
+            $"Airline Name: {t5.Airlines[flight.FlightNumber[0..2]].Name}\r\n" + // Gets the name from the Airline object
             $"Origin: {flight.Origin}\r\n" +
             $"Destination: {flight.Destination}\r\n" +
             $"Expected Departure/ Arrival Time: {flight.ExpectedTime}\r\n" +
             $"Status: {flight.Status}\r\n" +
             $"Special Request Code: {GetSpecialRequestCode(flight)}\r\n" +
-            $"Boarding Gate: {GetFlightBoardingGate(t5.BoardingGates, flight)}"
+            $"Boarding Gate: {GetFlightBoardingGate(t5, flight)}"
             );
     }
 
@@ -521,7 +692,7 @@ class Program
 
         // Prompt the user to enter the 2-Letter Airline Code (e.g. SQ or MH, etc.)
         // string airlineCode = PromptAirLineCode(t5.Airlines, "Enter airline code: ");
-        string airlineCode = ValidateInputFrom(t5.Airlines.Keys, "Enter Airline Code: ", "No matching airline code found.", true);
+        string airlineCode = ValidateInputFrom(t5.Airlines.Keys, "Enter Airline Code: ", "No matching airline code found.", 1);
 
         // Retrieve the Airline object selected.
         myAirline = t5.Airlines[airlineCode];
@@ -552,7 +723,7 @@ class Program
         ListAirlines(t5.Airlines);
 
         // Prompt the user to enter the 2-Letter Airline Code (e.g. SQ or MH, etc.)
-        string airlineCode = ValidateInputFrom(t5.Airlines.Keys, "Enter Airline Code: ", "No matching airline code found.", true);
+        string airlineCode = ValidateInputFrom(t5.Airlines.Keys, "Enter Airline Code: ", "No matching airline code found.", 1);
 
         // Retrieve the Airline object selected.
         myAirline = t5.Airlines[airlineCode];
@@ -569,6 +740,7 @@ class Program
         // Prompt input to Modify/ Delete flight.
         Console.WriteLine("1. Modify Flight");
         Console.WriteLine("2. Delete Flight");
+        
         option = ValidateInputFrom(new string[] { "1", "2" }); // option can ONLY either by 1 / 2
 
         if (option == "1") // if modify flight
@@ -624,10 +796,10 @@ class Program
                 string flightStatus = ValidateInputFrom(
                                         new string[] { "DELAYED", "BOARDING", "ON TIME", "SCHEDULED" },
                                         "Enter new Status: ",
-                                        "Error. Invalid Status entered.", true);
+                                        "Error. Invalid Status entered.", 1);
 
                 // Uppercase the first letter of input and the rest is in lower case
-                flightStatus = flightStatus.Substring(0, 1) + flightStatus.Substring(1, flightStatus.Length - 1).ToLower();
+                flightStatus = flightStatus.ToUpper()[0] + flightStatus[1..].ToLower();
 
                 // Update new flight status
                 myFlight.Status = flightStatus;
@@ -656,7 +828,7 @@ class Program
                     // Prompt new Special Request Code
                     flightSRQ = ValidateInputFrom(new string[] { "CFFT", "DDJB", "LWTT", "NONE" },
                                             "Enter new Special Request Code (CFFT/DDJB/LWTT/None): ",
-                                            "Error. No matching Special Request Code found.", true);
+                                            "Error. No matching Special Request Code found.", 1);
 
                     // Flight class with UPDATED Special Request Code
                     updated = flightConstructors[flightSRQ](
@@ -715,7 +887,7 @@ class Program
                     string boardingGateCode = ValidateInputFrom(
                                     t5.BoardingGates.Keys,
                                     "Enter a new Boarding Gate: ",
-                                    "Boarding Gate not found.", true);
+                                    "Boarding Gate not found.", 1);
 
                     bgNew = t5.BoardingGates[boardingGateCode];
                     // Checks if selected Boarding Gate has flight.
@@ -751,7 +923,7 @@ class Program
             option = ValidateInputFrom(
                                 new string[] { "Y", "N" },
                                 $"Are you sure you want to delete Flight {myFlight.FlightNumber} (Y/N): ",
-                                "Invalid option entered.", true);
+                                casing: 1);
 
             if (option == "Y") // if user wants to delete flight
             {
