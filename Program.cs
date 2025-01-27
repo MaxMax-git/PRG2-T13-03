@@ -428,6 +428,37 @@ class Program
         }
     }
 
+    // PART 7 & 8 // 
+    // ListAirlineFlights() -> Shows all flight detail from an airline.
+    private static void ListAirlineFlights(Terminal t5, Airline airline)
+    {
+        string format = "{0,-16}{1,-23}{2,-23}{3,-23}{4}"; // format of table
+                                                           // Header
+        Console.WriteLine(
+            "=============================================\r\n" +
+            $"List of Flights for {airline.Name}\r\n" +
+            "=============================================");
+
+        // Display the Flights with their basic Information.
+        Console.WriteLine(format, "Flight Number", "Airline Name", "Origin", "Destination", "Expected Departure/Arrival Time");
+        foreach (Flight flight in t5.Flights.Values)
+        {
+            string flightAirline = flight.FlightNumber.Substring(0, 2);
+
+            // Check for Matching Airline Code
+            if (airline.Code == flightAirline)
+            {
+                Console.WriteLine(format,
+                    flight.FlightNumber,
+                    t5.Airlines[flightAirline].Name, // Gets the name from the Airline object
+                    flight.Origin,
+                    flight.Destination,
+                    flight.ExpectedTime
+                );
+            }
+        }
+    }
+
     // PART 7 & 8 //
     // PromptFlighNumberFromAirline(string message, string airlineCode)
     private static string PromptFlightNumberFromAirline(Terminal t5, string message, string airlineCode)
@@ -459,7 +490,7 @@ class Program
     }
 
     // PART 7 & 8 //
-    // DisplayFullFlightDetails()
+    // DisplayFullFlightDetails() -> Shows the FULL detail of a Flight
     private static void DisplayFullFlightDetails(Terminal t5, Flight flight)
     {
         // Header
@@ -485,8 +516,6 @@ class Program
     // DisplayAirlineFlights() 
     private static void DisplayAirlineFlights(Terminal t5)
     {
-        string format = "{0,-16}{1,-23}{2,-23}{3,-23}{4}";
-
         // Values
         Airline myAirline; // initialise to retrieve later for further use.
         Flight myFlight; // initialise to retrieve later for further use.
@@ -501,30 +530,8 @@ class Program
         // Retrieve the Airline object selected.
         myAirline = t5.Airlines[airlineCode];
 
-        // Header
-        Console.WriteLine(
-            "=============================================\r\n" +
-            $"List of Flights for {myAirline.Name}\r\n" +
-            "=============================================");
-
-        // Display the Flights with their basic Information.
-        Console.WriteLine(format, "Flight Number", "Airline Name", "Origin", "Destination", "Expected Departure/Arrival Time");
-        foreach (Flight flight in t5.Flights.Values)
-        {
-            string flightAirline = flight.FlightNumber.Substring(0, 2);
-
-            // Check for Matching Airline Code
-            if (myAirline.Code == flightAirline)
-            {
-                Console.WriteLine(format,
-                    flight.FlightNumber,
-                    t5.Airlines[flightAirline].Name, // Gets the name from the Airline object
-                    flight.Origin,
-                    flight.Destination,
-                    flight.ExpectedTime
-                );
-            }
-        }
+        // Show all flight (basic detail) from selected airline.
+        ListAirlineFlights(t5, myAirline);
 
         // Prompt the user to select a Flight Number
         string flightNo = PromptFlightNumberFromAirline(t5, "Enter Flight Number: ", airlineCode);
@@ -555,30 +562,8 @@ class Program
         // Retrieve the Airline object selected.
         myAirline = t5.Airlines[airlineCode];
 
-        // Header
-        Console.WriteLine(
-            "=============================================\r\n" +
-            $"List of Flights for {myAirline.Name}\r\n" +
-            "=============================================");
-
-        // Display the Flights with their basic Information.
-        Console.WriteLine(format, "Flight Number", "Airline Name", "Origin", "Destination", "Expected Departure/Arrival Time");
-        foreach (Flight flight in t5.Flights.Values)
-        {
-            string flightAirline = flight.FlightNumber.Substring(0, 2);
-
-            // Check for Matching Airline Code
-            if (myAirline.Code == flightAirline)
-            {
-                Console.WriteLine(format,
-                    flight.FlightNumber,
-                    t5.Airlines[flightAirline].Name, // Gets the name from the Airline object
-                    flight.Origin,
-                    flight.Destination,
-                    flight.ExpectedTime
-                );
-            }
-        }
+        // List all Flights (basic info) from selected Airline.
+        ListAirlineFlights(t5, myAirline);
 
         // Prompt the user to select a Flight Number
         string flightNo = PromptFlightNumberFromAirline(t5, "Choose an existing Flight to modify or delete: ", airlineCode);
