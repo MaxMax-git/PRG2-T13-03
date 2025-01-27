@@ -16,7 +16,7 @@ namespace PRG2_T13_03.Classes
         public bool SupportsCFFT { get; set; }
         public bool SupportsDDJB { get; set; }
         public bool SupportsLWTT { get; set; }
-        public Flight Flight { get; set; }
+        public Flight? Flight { get; set; }
 
         // Methods
         public double CalculateFees()

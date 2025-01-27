@@ -548,7 +548,6 @@ class Program
     // ModifyFlightDetails() -> 
     private static void ModifyFlightDetails(Terminal t5)
     {
-        string format = "{0,-16}{1,-23}{2,-23}{3,-23}{4}";
         string option = "";
         Airline myAirline; // initialised for retrieving & using the Airline object later.
         Flight myFlight;
@@ -655,7 +654,6 @@ class Program
                     };
 
                 // Check whether it already belongs to a boarding gate
-
                 while (true)
                 {
                     // e.g. SQ 115 -> DDJB   
@@ -704,7 +702,33 @@ class Program
         }
         else if (option == "2") // if delete flight
         {
+            // Display warning message to delete flight
+            option = ValidateInputFrom(
+                                new string[] { "Y", "N" },
+                                $"Are you sure you want to delete Flight {myFlight.FlightNumber} (Y/N): ",
+                                "Invalid Option entered.", true);
 
+            if (option == "Y") // if user wants to delete flight
+            {
+                // Remove flight from Airline
+                myAirline.RemoveFlight(myFlight);
+
+                // Remove flight from Boarding Gate (if assigned)
+                foreach (BoardingGate boardingGate in t5.BoardingGates.Values)
+                {
+                    if (boardingGate.Flight == myFlight)
+                    {
+                        boardingGate.Flight = null; // remove flight from boarding gate
+                    }
+                }
+
+                // Remove flights from t5.Flights dictionary
+
+            }
+            else if (option == "N") // if user does not want to delete flight
+            {
+                //
+            }
         }
     }
     
