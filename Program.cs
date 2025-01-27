@@ -326,7 +326,7 @@ class Program
 
 
     // PART 4 //
-    // List all the boarding gates
+    // ListAllBoardingGates() -> List info about boarding gates. (Special Request Code + Flight assigned)
     private static void ListAllBoardingGates(Dictionary<string, BoardingGate> boardingDict)
     {
         string format = "{0,-16}{1,-23}{2,-23}{3,-23}{4}"; // format for string (string interpolation)
@@ -374,7 +374,7 @@ class Program
             }
             else if (!BoardingGateSupportsFlight(boardingGate, flight))
             {
-                Console.WriteLine($"Boarding Gate {boardingGate.GateName} is already assigned to flight {flight.FlightNumber}!");
+                Console.WriteLine($"Boarding Gate {boardingGate.GateName} does not support flight {flight.FlightNumber}!");
             }
             else break;
         }
@@ -401,6 +401,8 @@ class Program
             flight.Status = (status == "1") ? "Delayed" : (status == "2") ? "Boarding" : "On Time";
         }
         
+        boardingGate.Flight = flight;
+
         Console.WriteLine($"Flight {flight.FlightNumber} has been assigned to Boarding Gate {boardingGate.GateName}!");
     }
 
@@ -408,7 +410,7 @@ class Program
     // ListAirLines() -> Shows all the Airline Name & Code.
     private static void ListAirlines(Dictionary<string, Airline> airlineDict)
     {
-        string format = "{0,-16}{1}";
+        string format = "{0,-16}{1}"; // format of table
         // Header
         Console.WriteLine(
             "=============================================\r\n" +
@@ -693,6 +695,7 @@ class Program
                             // Check if it voilates the boarding gate domains
                             if (!match)
                             {
+                                // Display error Message
                                 Console.WriteLine($"{bg.GateName} does not support Special Request Code ({flightSRQ})");
                             }
                             else { bg.Flight = updated; } // updates flight belonging to boarding gate
