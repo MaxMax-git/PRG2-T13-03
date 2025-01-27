@@ -471,8 +471,9 @@ class Program
             // Check for Valid flight code
             if (match)
             {
-                // AND check whether flight code is from CHOSEN Airline
-                if (flightNo.Substring(0, 2) == airlineCode) { 
+                // AND check whether flight code is from CHOSEN Airline\
+                if (t5.Airlines[airlineCode].Flights.ContainsKey(flightNo)) 
+                {
                     return flightNo; 
                 }
                 else 
@@ -577,7 +578,7 @@ class Program
                 "1. Modify Basic Information\r\n" +
                 "2. Modify Status\r\n" +
                 "3. Modify Special Request Code\r\n" +
-                "4. Modify Boarding Gate"
+                "4. Modify Boarding Gate\r\n"
                 );
 
             // Prompt user to enter options to modify flight
@@ -674,7 +675,7 @@ class Program
                             if (!match)
                             {
                                 // Display error Message
-                                Console.WriteLine($"{bg.GateName} does not support Special Request Code ({flightSRQ})");
+                                Console.WriteLine($"Boarding Gate ({bg.GateName}) does not support Special Request Code ({flightSRQ})");
                             }
                             else { bg.Flight = updated; } // updates flight belonging to boarding gate
                             break;
@@ -690,7 +691,56 @@ class Program
             }
             else if (option == "4") // Modify Flight Boarding Gate
             {
-                //
+                bool match = false;
+                BoardingGate? bgOld = null;
+                BoardingGate bgNew;
+                
+                foreach (BoardingGate boardingGate in t5.BoardingGates.Values)
+                {
+                    // Checks if flight belongs to a Boarding Gate 
+                    match = (boardingGate.Flight != null) && (boardingGate.Flight == myFlight);
+                    if (match) // if found, display Found message
+                    {
+                        bgOld = boardingGate;
+                        Console.WriteLine($"Flight {myFlight.FlightNumber} currently belongs to Boarding Gate ({boardingGate.GateName})");
+                        break;
+                    }
+                }
+                // Display Not-Found message
+                if (!match) { Console.WriteLine($"Flight {myFlight.FlightNumber} currently does not belong to a Boarding Gate."); }
+
+                while (true)
+                {
+                    // Ask user to enter a valid Boarding Gate
+                    string boardingGateCode = ValidateInputFrom(
+                                    t5.BoardingGates.Keys,
+                                    "Enter a new Boarding Gate: ",
+                                    "Boarding Gate not found.", true);
+
+                    bgNew = t5.BoardingGates[boardingGateCode];
+                    // Checks if selected Boarding Gate has flight.
+                    if (bgNew.Flight != null)
+                    {
+                        // Display Error message
+                        Console.WriteLine($"Error. Boarding Gate ({bgNew.GateName}) is occupied by Flight {bgNew.Flight!.FlightNumber}. ");
+                    }
+                    // Checks if boarding gate suppports flight's Special Request Code
+                    else if (!BoardingGateSupportsFlight(bgNew, myFlight))
+                    {
+                        // Display Error Message
+                        Console.WriteLine($"Boarding Gate ({bgNew.GateName}) does not suppport Special Request Code ({GetSpecialRequestCode(myFlight)}).");
+                    }
+                    else { break; } // if satisfy the above conditions
+                }
+                if (match && bgOld != null) // remove flight if it was in BG, to assign to its new BG
+                { 
+                    bgOld.Flight = null;
+                    Console.WriteLine($"Flight {myFlight.FlightNumber} is removed from Boarding Gate {bgOld.GateName}.");
+                }
+
+                // Display success message
+                bgNew.Flight = myFlight; // assign flight to selected Boarding Gate
+                Console.WriteLine($"Flight {myFlight.FlightNumber} is now successfully assigned to Boarding Gate ({bgNew.GateName}). ");
             }
             Console.WriteLine("Flight Updated!");
             DisplayFullFlightDetails(t5, myFlight);
@@ -701,7 +751,7 @@ class Program
             option = ValidateInputFrom(
                                 new string[] { "Y", "N" },
                                 $"Are you sure you want to delete Flight {myFlight.FlightNumber} (Y/N): ",
-                                "Invalid Option entered.", true);
+                                "Invalid option entered.", true);
 
             if (option == "Y") // if user wants to delete flight
             {
@@ -718,11 +768,14 @@ class Program
                 }
 
                 // Remove flights from t5.Flights dictionary
+                t5.Flights.Remove(myFlight.FlightNumber); // logic works cuz myFlight is retreived from t5.Flights[flightNo]
 
+                // Display success message
+                Console.WriteLine($"Flight {myFlight.FlightNumber} is successfully deleted.");
             }
             else if (option == "N") // if user does not want to delete flight
             {
-                //
+                Console.WriteLine($"Flight {myFlight.FlightNumber} is not deleted.");
             }
         }
     }
