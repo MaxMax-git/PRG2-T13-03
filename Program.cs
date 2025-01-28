@@ -105,9 +105,9 @@ class Program
         _ => true,
     };
 
-    // GetFlightBoardingGate ( Flight myFlight )
+    // GetFlightBoardingGate ( Terminal t5, Flight flight )
     //  Returns the Boarding Gate name that fligt belongs to. If none, return "None"
-    private static string GetFlightBoardingGate(Terminal t5, Flight flight)
+    private static BoardingGate? GetFlightBoardingGate(Terminal t5, Flight flight)
     {
         // Iterate thru the boarding gate dictionary.
         foreach (BoardingGate boardingGate in t5.BoardingGates.Values)
@@ -115,10 +115,17 @@ class Program
             // If flight allocated to boardingGate matches myFlight
             if (boardingGate.Flight == flight)
             {
-                return boardingGate.GateName; // returns name of BoardingGate
+                return boardingGate; // returns name of BoardingGate
             }
         }
-        return "Unassigned"; // if no boardingGate assigned to flight
+        return null; // if no boardingGate assigned to flight
+    }
+
+    // GetFlightBoardingGateName( Terminal t5, Flight, flight )
+    private static string GetFlightBoardingGateName(Terminal t5, Flight flight)
+    {
+        BoardingGate? boardingGate = GetFlightBoardingGate(t5, flight);
+        return (boardingGate != null) ? boardingGate.GateName : "Unassigned";
     }
 
     // PART 1 //
@@ -279,7 +286,7 @@ class Program
         {"4", t => CreateFlight(t)},
         {"5", t => DisplayAirlineFlightFullDetails(t)},
         {"6", t => ModifyFlightDetails(t)},
-        //{"7", () => DisplayFlightSchedule()},
+        {"7", t => DisplayFlightSchedule(t)},
         {"0", t => {
             Console.Write("Goodbye!");
             Environment.Exit(0);
@@ -313,7 +320,7 @@ class Program
 
     private static void ListAllFlights(Terminal t5)
     {
-        string format = "{0,-16}{1,-23}{2,-23}{3,-23}{4}";
+        string format = "{0,-15}{1,-20}{2,-20}{3,-20}{4}";
         // Header
         Console.WriteLine(
             "=============================================\r\n" +
@@ -345,7 +352,7 @@ class Program
     // ListAllBoardingGates() -> List info about boarding gates. (Special Request Code + Flight assigned)
     private static void ListAllBoardingGates(Terminal t5)
     {
-        string format = "{0,-16}{1,-23}{2,-23}{3,-23}{4}"; // format for string (string interpolation)
+        string format = "{0,-15}{1,-20}{2,-20}{3,-20}{4}"; // format for string (string interpolation)
         // Header
         Console.WriteLine(
             "=============================================\r\n" +
@@ -491,7 +498,7 @@ class Program
     {
         Console.WriteLine(
             "=============================================  \r\n" +
-            "Create Flight                                  \r\n" +
+            "Create Flight for Changi Airport Terminal 5    \r\n" +
             "=============================================");
 
         int count = 0;
@@ -563,7 +570,7 @@ class Program
                 $"Expected Departure/Arrival Time: {flight.ExpectedTime}\r\n" +
                 $"Status: {flight.Status}\r\n" +
                 $"Special Request Code: {GetSpecialRequestCode(flight)}\r\n" +
-                $"Boarding Gate: {GetFlightBoardingGate(t5, flight)}");
+                $"Boarding Gate: {GetFlightBoardingGateName(t5, flight)}");
 
             // Prompt for another flight, else break out of loop
             if (
@@ -675,7 +682,7 @@ class Program
             $"Expected Departure/ Arrival Time: {flight.ExpectedTime}\r\n" +
             $"Status: {flight.Status}\r\n" +
             $"Special Request Code: {GetSpecialRequestCode(flight)}\r\n" +
-            $"Boarding Gate: {GetFlightBoardingGate(t5, flight)}"
+            $"Boarding Gate: {GetFlightBoardingGateName(t5, flight)}"
             );
     }
 
@@ -951,7 +958,42 @@ class Program
             }
         }
     }
-    
+
+    // PART 9 //
+    private static void DisplayFlightSchedule(Terminal t5)
+    {
+        string format = "{0,-15}{1,-20}{2,-20}{3,-20}{4,-35}{5,-15}{6,-25}{7}";
+        // Header
+        Console.WriteLine(
+            "=============================================  \r\n" +
+            "Flight Schedule for Changi Airport Terminal 5  \r\n" +
+            "=============================================");
+
+        List<Flight> schedule = new List<Flight>(t5.Flights.Values);
+        schedule.Sort();
+
+        // Display the Flights with their basic Information.
+        Console.WriteLine(format, "Flight Number", "Airline Name", "Origin", "Destination", "Expected Departure/Arrival Time", "Status", "Special Request Code", "Boarding Gate");
+        foreach (Flight flight in schedule)
+        {
+            // Prints the flight with the format
+            Console.WriteLine(format,
+                flight.FlightNumber,
+                // Get the substring of the flight number
+                // Gets the name from the Airline object
+                t5.Airlines[flight.FlightNumber[0..2]].Name,
+                flight.Origin,
+                flight.Destination,
+                flight.ExpectedTime,
+                flight.Status,
+                GetSpecialRequestCode(flight), 
+                GetFlightBoardingGateName(t5, flight)
+            );
+        }
+        Console.WriteLine();
+    }
+
+
     static void Main(string[] args)
     {
         Terminal t5 = new Terminal("Terminal5");
