@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace PRG2_T13_03.Classes
 {
-    abstract class Flight
+    abstract class Flight : IComparable<Flight>
     {
         // Properties
         public string FlightNumber { get; set; } = "";
@@ -36,7 +36,12 @@ namespace PRG2_T13_03.Classes
         {
             return $"Flight Number: {FlightNumber}\tOrigin: {Origin}\tDestination: {Destination}\tExpectedTime: {ExpectedTime}\tStatus: {Status}";
         }
-
+        public int CompareTo(Flight? flight)
+        {
+            // Compares the flight's expected time
+            // If the other flight is null, consider this flight "bigger"
+            return (flight != null) ? ExpectedTime.CompareTo(flight.ExpectedTime) : 1;
+        }
 
         // Constructor
         public Flight() { }
