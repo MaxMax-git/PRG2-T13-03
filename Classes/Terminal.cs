@@ -49,7 +49,34 @@ namespace PRG2_T13_03.Classes
 
         public void PrintAirlineFees()
         {
-            throw new NotImplementedException(); // For advanced features
+            double totalBaseFees = 0;
+            double totalDiscounts = 0;
+
+            string format = "  {0,-25}: {1:C2}";
+            foreach (Airline airline in Airlines.Values)
+            {
+                double baseFees = airline.Flights.Sum(x => (x.Value.CalculateFees()));
+                double finalFees = airline.CalculateFees();
+                double discounts = baseFees - finalFees;
+
+                // Add to the total
+                totalBaseFees += baseFees;
+                totalDiscounts += discounts;
+
+                Console.WriteLine($"Fees for {airline.Name} ({airline.Code}):");
+                Console.WriteLine(format, "Subtotal of fees", baseFees);
+                Console.WriteLine(format, "Subtotal of discounts", discounts);
+                Console.WriteLine($"  Total final fees = {baseFees:C2} - {discounts:C2}");
+                Console.WriteLine($"                   = {finalFees:C2}");
+                Console.WriteLine();
+            }
+
+            format = "{0,-30}: {1:C2}";
+            
+            Console.WriteLine(format, "Final subtotal of fees", totalBaseFees);
+            Console.WriteLine(format, "Final subtotal of discounts", totalDiscounts);
+            Console.WriteLine(format, "Final total", totalBaseFees - totalDiscounts);
+            Console.WriteLine("{0,-30}: {1:P1}", "Percentage Discounted", totalDiscounts/totalBaseFees);
         }
 
         public override string ToString()

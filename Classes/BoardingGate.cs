@@ -21,12 +21,13 @@ namespace PRG2_T13_03.Classes
         // Methods
         public double CalculateFees()
         {
+            if (Flight == null) throw new NullReferenceException("There is no Flight assigned to the Boarding Gate");
             return Flight.CalculateFees();
         }
 
         public override string ToString()   
         {
-            return $"GateName: {GateName}\tSupports CFFT: {SupportsCFFT}\tSupports DDJB: {SupportsDDJB}\tSupports LWTT: {SupportsLWTT}";
+            return $"GateName: {GateName}\tSupports CFFT: {SupportsCFFT}\tSupports DDJB: {SupportsDDJB}\tSupports LWTT: {SupportsLWTT}\tFlight Assigned: {Flight != null}";
         }
 
         // Constructor
