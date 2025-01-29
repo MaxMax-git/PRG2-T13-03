@@ -17,6 +17,7 @@ using System.IO;
 using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 
 // -- IMPORTANT NOTES (to be deleted after completion.) -- // 
@@ -287,6 +288,7 @@ class Program
         {"5", t => DisplayAirlineFlightFullDetails(t)},
         {"6", t => ModifyFlightDetails(t)},
         {"7", t => DisplayFlightSchedule(t)},
+        {"8", t => ProcessAllUnassignedFlights(t)},
         {"0", t => {
             Console.Write("Goodbye!");
             Environment.Exit(0);
@@ -310,6 +312,7 @@ class Program
             "5. Display Airline Flights                                 \r\n" +
             "6. Modify Flight Details                                   \r\n" +
             "7. Display Flight Schedule                                 \r\n" +
+            "8. Process All Unassigned Flights                          \r\n" +
             "0. Exit                                                    \r\n");
 
         // Prompts the user for an option,
@@ -318,9 +321,9 @@ class Program
         return ValidateInputFrom(options.Keys);
     }
 
-    private static void ListAllFlights(Terminal t5)
+    private static void ListAllFlights(Terminal t5, bool moreDetails = false)
     {
-        string format = "{0,-15}{1,-20}{2,-20}{3,-20}{4}";
+        string format = "{0,-15}{1,-20}{2,-20}{3,-20}{4,-35}";
         // Header
         Console.WriteLine(
             "=============================================\r\n" +
@@ -328,13 +331,15 @@ class Program
             "=============================================");
 
         // Display the Flights with their basic Information.
-        Console.WriteLine(format, "Flight Number", "Airline Name", "Origin", "Destination", "Expected Departure/Arrival Time");
+        Console.Write(format, "Flight Number", "Airline Name", "Origin", "Destination", "Expected Departure/Arrival Time");
+        if (moreDetails) { Console.Write("{0,-25}{1}", "Special Request Code", "Boarding Gate"); }
+        Console.WriteLine();
         foreach (KeyValuePair<string, Flight> kvp in t5.Flights)
         {
             Flight flight = kvp.Value;
 
             // Prints the flight with the format
-            Console.WriteLine(format,
+            Console.Write(format,
                 flight.FlightNumber,
                 // Get the substring of the flight number
                 // Gets the name from the Airline object
@@ -343,6 +348,14 @@ class Program
                 flight.Destination,
                 flight.ExpectedTime
             );
+            if (moreDetails) // advanced -> add Flight's Special Request Code + Boarding Gate Name
+            {
+                Console.Write("{0,-25}{1}", 
+                    GetSpecialRequestCode(flight),
+                    GetFlightBoardingGateName(t5, flight)
+                    );
+            }
+            Console.WriteLine();
         }
         Console.WriteLine();
     }
@@ -439,20 +452,20 @@ class Program
             flightNo = flightNo.Trim().ToUpper();
 
             // Warn if empty
-            if (string.IsNullOrEmpty(flightNo)) Console.WriteLine("Flight number cannot be empty!");
+            if (string.IsNullOrEmpty(flightNo)) { Console.WriteLine("Flight number cannot be empty!"); }
 
             // Warn if the flight number already exists
-            else if (t5.Flights.ContainsKey(flightNo)) Console.WriteLine("Another flight exists with the same flight number!");
+            else if (t5.Flights.ContainsKey(flightNo)) { Console.WriteLine("Another flight exists with the same flight number!"); }
 
             // Warn if the flight number is not the correct format
-            else if (flightNo.Length != 6 || flightNo[2] != ' ') Console.WriteLine("Flight number must follow the format! e.g. SQ 123");
+            else if (flightNo.Length != 6 || flightNo[2] != ' ') { Console.WriteLine("Flight number must follow the format! e.g. SQ 123"); }
 
             // Warn if flight number does not correspond to an existing airline
-            else if (!t5.Airlines.ContainsKey(flightNo[0..2])) Console.WriteLine("Flight number must belong to an existing airline! e.g. SQ 123");
+            else if (!t5.Airlines.ContainsKey(flightNo[0..2])) { Console.WriteLine("Flight number must belong to an existing airline! e.g. SQ 123"); }
 
             // Warn if flight number does not end off with 3 digits
-            else if (!flightNo[3..].All(char.IsDigit)) Console.WriteLine("Flight number must end off with 3 digits! e.g. SQ 123");
-            else return flightNo;
+            else if (!flightNo[3..].All(char.IsDigit)) { Console.WriteLine("Flight number must end off with 3 digits! e.g. SQ 123"); }
+            else { return flightNo; }
         }
     }
 
@@ -959,7 +972,7 @@ class Program
         }
     }
 
-    // PART 9 //
+    // PART 9 // 
     private static void DisplayFlightSchedule(Terminal t5)
     {
         string format = "{0,-15}{1,-20}{2,-20}{3,-20}{4,-35}{5,-15}{6,-25}{7}";
@@ -968,7 +981,7 @@ class Program
             "=============================================  \r\n" +
             "Flight Schedule for Changi Airport Terminal 5  \r\n" +
             "=============================================");
-
+        
         List<Flight> schedule = new List<Flight>(t5.Flights.Values);
         schedule.Sort();
 
@@ -991,6 +1004,112 @@ class Program
             );
         }
         Console.WriteLine();
+    }
+
+    // ADVANCED FEATURE (a) // -> Max
+    // ProcessAllUnassignedFlights()
+    private static void ProcessAllUnassignedFlights(Terminal t5)
+    {
+        int countNotAssigned = 0;
+        int countAssigned = 0;
+        int countProcessed = 0;
+        // Queue to store Flight objects if no Boarding Gate is assigned.
+        Queue<Flight> flightQueue = new Queue<Flight>();
+
+        // List of flights that are assigned a boarding gate.
+        List<Flight> flightBoarding = new List<Flight>(); 
+
+        // Check for flights that are assigned a boarding gate
+        foreach (BoardingGate boardingGate in t5.BoardingGates.Values)
+        {
+            if (boardingGate.Flight != null) // if Boarding Gate has Flight
+            {
+                flightBoarding.Add(boardingGate.Flight);
+            }
+            else { countNotAssigned++; } // if Boarding Gate has no Flight
+        }
+
+        // Check for flights that are not assigned a boarding gate
+        foreach (Flight myflight in t5.Flights.Values)
+        {
+            bool match = false;
+            foreach (Flight assignedFlight in flightBoarding)
+            {
+                // if flight is assigned
+                if (myflight == assignedFlight)
+                {
+                    match = true;
+                    break;
+                }
+            }
+            if (!match)
+            {
+                // flight not found -> not assigned -> Add to queue
+                flightQueue.Enqueue(myflight);
+            }
+        }
+
+        // Display the total number of Flights that do not have any Boarding Gate assigned yet
+        Console.WriteLine($"Number of Flights that do not have a Boarding Gate assigned: {flightQueue.Count}");
+
+        // Display the total number of Boarding Gates that do not have a Flight Number assigned yet
+        Console.WriteLine($"Number of Boarding Gates without an assigned Flight Number: {countNotAssigned}\n");
+
+        // While loop -> to iterate thru every flight in queue.
+        while ( flightQueue.Count > 0)
+        {
+            // Deqeueue the first flight in the queue
+            Flight flightDequeue = flightQueue.Dequeue();
+
+            // Check if the Flight has a Special Request Code
+            if (GetSpecialRequestCode(flightDequeue) != "None")
+            {
+                // Search for an unassigned Boarding Gate that matches the Special Request Code
+                foreach (BoardingGate boardingGate in t5.BoardingGates.Values)
+                {
+                    if (BoardingGateSupportsFlight(boardingGate, flightDequeue) && boardingGate.Flight == null)
+                    {
+                        boardingGate.Flight = flightDequeue; // assign boarding gate to flight
+                        countProcessed++;
+                        break;
+                    }
+                }
+            }
+            // Else -> Flight has NO Special Request Code
+            else
+            {
+                // Search for an unassigned Boarding Gate that has no Special Request Code
+                foreach (BoardingGate boardingGate in t5.BoardingGates.Values)
+                {
+                    if (BoardingGateSupportsFlight(boardingGate, flightDequeue) && boardingGate.Flight == null)
+                    {
+                        boardingGate.Flight = flightDequeue; // assign boarding gate to flight
+                        countProcessed++;
+                        break;
+                    }
+                }
+            }
+        }
+        // Display flight's 5 basic info + Special Request Code & Boarding Gate Name
+        ListAllFlights(t5, true);
+
+        // Calculate total number of Boarding Gates assigned a Flight.
+        foreach (BoardingGate boardingGate in t5.BoardingGates.Values)
+        {
+            if (boardingGate.Flight != null) // if boarding gate got flight
+            {
+                countAssigned++;
+            }
+        }
+
+        // Display the total number of Flights and Boarding Gates processed and assigned
+        Console.WriteLine($"Number of Flights & Boarding Gates processed & assigned: {countProcessed}");
+
+        // Display the total number of Flights and Boarding Gates that were processed automatically
+        //  over those that were already assigned as a PERCENTAGE
+        double percentage = (double)countProcessed / countAssigned * 100;
+        Console.WriteLine($"Percentage of automatically processed Flights & Boarding Gates over those already assigned: {percentage:f2}%");
+
     }
 
 
