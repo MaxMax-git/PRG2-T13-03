@@ -24,31 +24,29 @@ namespace PRG2_T13_03.Classes
 
         public double CalculateFees()// PLACEHOLDER
         {
-            double fees = 0;
+            double fees = Flights.Sum(x => x.Value.CalculateFees());
 
             int noOfFlights = Flights.Count;
 
-            // Initiate base fee first IF NO OF FLIGHTS > 5 to apply 3% discount if necessary
-            if (noOfFlights > 5)
-            {
-                foreach (KeyValuePair<string, Flight> kvp in Flights)
-                {
-                    fees += kvp.Value.CalculateFees();
-                }
-                fees *= 0.97;
-            }
+            // Apply 3% discount if more than 5 flights
+            if (noOfFlights > 5) fees *= .97;
 
+            //{
+            //    foreach (KeyValuePair<string, Flight> kvp in Flights)
+            //    {
+            //        fees += kvp.Value.CalculateFees();
+            //    }
+            //    fees *= 0.97;
+            //}
+
+            // Calculate the other fees
             foreach (KeyValuePair<string, Flight> kvp in Flights)
             {
                 Flight flight = kvp.Value;
 
-                // Calculate and add to fees IF NO OF FLIGHTS <= 5
-                // (to not overstate the actual value)
-                if (noOfFlights <= 5) fees += flight.CalculateFees();
-
                 // For flights arriving before 11 am or after 9 pm
-                int hours = flight.ExpectedTime.TimeOfDay.Hours;
-                if (hours < 11 || hours > 21) fees -= 110;
+                int hour = flight.ExpectedTime.Hour;
+                if (hour < 11 || hour > 21) fees -= 110;
 
                 // For flights with these origins:
                 // Dubai(DXB), Bangkok(BKK) or Tokyo(NRT)
@@ -62,7 +60,7 @@ namespace PRG2_T13_03.Classes
             }
 
             // For every 3 flights arriving/ departing, airlines will receive a discount
-            fees -= ((int)noOfFlights % 3) * 350;
+            fees -= ((int)(noOfFlights / 3)) * 350;
 
             return (fees < 0) ? 0 : fees; // Makes sure the fees don't go below 0
         }

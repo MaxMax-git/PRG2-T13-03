@@ -110,16 +110,21 @@ class Program
     //  Returns the Boarding Gate name that fligt belongs to. If none, return "None"
     private static BoardingGate? GetFlightBoardingGate(Terminal t5, Flight flight)
     {
-        // Iterate thru the boarding gate dictionary.
-        foreach (BoardingGate boardingGate in t5.BoardingGates.Values)
-        {
-            // If flight allocated to boardingGate matches myFlight
-            if (boardingGate.Flight == flight)
-            {
-                return boardingGate; // returns name of BoardingGate
-            }
-        }
-        return null; // if no boardingGate assigned to flight
+        // PAST IMPLEMENTATION
+        //// Iterate thru the boarding gate dictionary.
+        //foreach (BoardingGate boardingGate in t5.BoardingGates.Values)
+        //{
+        //    // If flight allocated to boardingGate matches myFlight
+        //    if (boardingGate.Flight == flight)
+        //    {
+        //        return boardingGate; // returns name of BoardingGate
+        //    }
+        //}
+        //return null; // if no boardingGate assigned to flight
+
+        // NEW IMPLEMENTATION
+        // Finds the first boarding gate which has a flight equal to the flight passed, else returns null
+        return t5.BoardingGates.FirstOrDefault(x => (x.Value.Flight == flight)).Value;
     }
 
     // GetFlightBoardingGateName( Terminal t5, Flight, flight )
@@ -289,6 +294,7 @@ class Program
         {"6", t => ModifyFlightDetails(t)},
         {"7", t => DisplayFlightSchedule(t)},
         {"8", t => ProcessAllUnassignedFlights(t)},
+        {"9", t => DisplayAirlineFees(t)},
         {"0", t => {
             Console.Write("Goodbye!");
             Environment.Exit(0);
@@ -313,6 +319,7 @@ class Program
             "6. Modify Flight Details                                   \r\n" +
             "7. Display Flight Schedule                                 \r\n" +
             "8. Process All Unassigned Flights                          \r\n" +
+            "9. Display Total Fee Per Airline For the Day               \r\n" +
             "0. Exit                                                    \r\n");
 
         // Prompts the user for an option,
@@ -689,7 +696,7 @@ class Program
         // Displays the full details of the selected flight.
         Console.WriteLine(
             $"Flight Number: {flight.FlightNumber}\r\n" +
-            $"Airline Name: {t5.Airlines[flight.FlightNumber[0..2]].Name}\r\n" + // Gets the name from the Airline object
+            $"Airline Name: {t5.GetAirlineFromFlight(flight).Name}\r\n" + // Gets the name from the Airline object
             $"Origin: {flight.Origin}\r\n" +
             $"Destination: {flight.Destination}\r\n" +
             $"Expected Departure/ Arrival Time: {flight.ExpectedTime}\r\n" +
@@ -994,7 +1001,7 @@ class Program
                 flight.FlightNumber,
                 // Get the substring of the flight number
                 // Gets the name from the Airline object
-                t5.Airlines[flight.FlightNumber[0..2]].Name,
+                t5.GetAirlineFromFlight(flight).Name,
                 flight.Origin,
                 flight.Destination,
                 flight.ExpectedTime,
@@ -1011,7 +1018,7 @@ class Program
     private static void ProcessAllUnassignedFlights(Terminal t5)
     {
         int countNotAssigned = 0;
-        int countAssigned = 0;
+        int countAssigned = 0;  
         int countProcessed = 0;
         // Queue to store Flight objects if no Boarding Gate is assigned.
         Queue<Flight> flightQueue = new Queue<Flight>();
@@ -1112,6 +1119,29 @@ class Program
 
     }
 
+    // ADVANCED FEATURE (b) // -> Haydn
+    private static void DisplayAirlineFees(Terminal t5)
+    {
+        // Find an unassigned flight, then display error message if there is one
+        //Flight? unassignedFlight = t5.Flights
+        //    .FirstOrDefault(
+        //    x => (GetFlightBoardingGate(t5, x.Value) == null)
+        //    ).Value;
+        //if (unassignedFlight != null)
+        //{
+        //    Console.WriteLine(
+        //           "Not all flights have been assigned boarding gates! \r\n" +
+        //           "Please ensure that all flights have been assigned a boarding gate before running this feature!");
+        //    return;
+        //}
+
+        Console.WriteLine(
+           "=============================================  \r\n" +
+           "Total Fee Per Airline For the Day  \r\n" +
+           "=============================================");
+
+        t5.PrintAirlineFees();
+    }
 
     static void Main(string[] args)
     {
