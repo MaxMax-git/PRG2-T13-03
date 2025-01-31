@@ -1112,17 +1112,17 @@ class Program
     private static void DisplayAirlineFees(Terminal t5)
     {
         // Find an unassigned flight, then display error message if there is one
-        //Flight? unassignedFlight = t5.Flights
-        //    .FirstOrDefault(
-        //    x => (GetFlightBoardingGate(t5, x.Value) == null)
-        //    ).Value;
-        //if (unassignedFlight != null)
-        //{
-        //    Console.WriteLine(
-        //           "Not all flights have been assigned boarding gates! \r\n" +
-        //           "Please ensure that all flights have been assigned a boarding gate before running this feature!");
-        //    return;
-        //}
+        Flight? unassignedFlight = t5.Flights
+            .FirstOrDefault(
+            x => (GetFlightBoardingGate(t5, x.Value) == null)
+            ).Value;
+        if (unassignedFlight != null)
+        {
+            Console.WriteLine(
+                   "Not all flights have been assigned boarding gates! \r\n" +
+                   "Please ensure that all flights have been assigned a boarding gate before running this feature!");
+            return;
+        }
 
         Console.WriteLine(
            "=============================================  \r\n" +
