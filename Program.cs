@@ -3,7 +3,10 @@
 // Student Name	    : Moh Journ Haydn
 // Partner Name	    : Low Yu Wen Max
 //==========================================================
+// Low Yu Wen Max -Bonus: 
 
+
+// Moh Journ Haydn -Bonus: 
 using Microsoft.VisualBasic.FileIO;
 using PRG2_T13_03;
 using PRG2_T13_03.Classes;
@@ -99,19 +102,6 @@ class Program
     //  Returns the Boarding Gate name that fligt belongs to. If none, return "None"
     private static BoardingGate? GetFlightBoardingGate(Terminal t5, Flight flight)
     {
-        // PAST IMPLEMENTATION
-        //// Iterate thru the boarding gate dictionary.
-        //foreach (BoardingGate boardingGate in t5.BoardingGates.Values)
-        //{
-        //    // If flight allocated to boardingGate matches myFlight
-        //    if (boardingGate.Flight == flight)
-        //    {
-        //        return boardingGate; // returns name of BoardingGate
-        //    }
-        //}
-        //return null; // if no boardingGate assigned to flight
-
-        // NEW IMPLEMENTATION
         // Finds the first boarding gate which has a flight equal to the flight passed, else returns null
         return t5.BoardingGates.FirstOrDefault(x => (x.Value.Flight == flight)).Value;
     }
