@@ -5,7 +5,7 @@
 //==========================================================
 // Moh Journ Haydn
 // Completed: Basic (2,3,5,6,9) & Advanced (b)
-// -Bonus: To be added.
+// -Bonus: Weather Delay System using API
 
 // Low Yu Wen Max
 // Completed: Basic (1,4,7,8) & Advanced (a)
@@ -17,15 +17,18 @@ using PRG2_T13_03;
 using PRG2_T13_03.Classes;
 using PRG2_T13_03.Classes.Flights;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http.Headers;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 
 class Program
@@ -35,6 +38,11 @@ class Program
     private static string airlineFileName = dataFolderName + "airlines.csv";
     private static string boardingGateFileName = dataFolderName + "boardinggates.csv";
     private static string flightsFileName = dataFolderName + "flights.csv";
+
+    private static string delayWeatherFileName = dataFolderName + "weathersToDelay.csv";
+    private static string cancelWeatherFileName = dataFolderName + "weathersToCancel.csv";
+    private static string weatherApiLink = "https://api-open.data.gov.sg/v2/real-time/api/twenty-four-hr-forecast";
+    private static int weatherApiRequestRetries = 3;
 
     // Utility
 
@@ -279,6 +287,10 @@ class Program
         {"7", t => DisplayFlightSchedule(t)},
         {"8", t => ProcessAllUnassignedFlights(t)},
         {"9", t => DisplayAirlineFees(t)},
+        {"10", t => DisplayWeather(t)},
+        {"11", t => PromptBulkRescheduleFlights(t)},
+        {"12", t => PromptCancelFlight(t)},
+        {"13", t => PromptBulkCancelFlights(t)},
         {"0", t => {
             Console.Write("Goodbye!");
             Environment.Exit(0);
@@ -304,6 +316,10 @@ class Program
             "7. Display Flight Schedule                                 \r\n" +
             "8. Process All Unassigned Flights                          \r\n" +
             "9. Display Total Fee Per Airline For the Day               \r\n" +
+            "10. Display 24-hour Weather Forecast                       \r\n" +
+            "11. Bulk Reschedule Flights                                \r\n" +
+            "12. Cancel Flight                                          \r\n" +
+            "13. Bulk Cancel Flights                                    \r\n" +
             "0. Exit                                                    \r\n");
 
         // Prompts the user for an option,
@@ -1127,9 +1143,460 @@ class Program
         t5.PrintAirlineFees();
     }
 
-    static void Main(string[] args)
+    // WEATHER API BONUS //
+
+    // API Processor
+    private static async Task<T?> ProcessDataAsync<T>(HttpClient client, string url)
+    {
+        await using Stream stream =
+            await client.GetStreamAsync(url);
+        var obj =
+            await JsonSerializer.DeserializeAsync<T>(stream);
+        return obj;
+    }
+
+    // GetWeatherAPI()
+    //  Attempts to get the weather api. Retries a set amount of times if it continues to fail
+    //  If all attempts are exhausted, warn the user, else inform them it succesfully loaded
+    //  Returns null if error,
+    //  else returns the forecast
+    private static async Task<WeatherForecast?> GetWeatherAPI()
+    {
+        using HttpClient client = new();
+        WeatherForecast? forecast = null;
+
+        // Init tries counter
+        int t = 0;
+        while (true)
+        {
+            if (t >= weatherApiRequestRetries)
+            {
+                Console.WriteLine($"Exhausted max 24-hour weather forecast API request attempts of {weatherApiRequestRetries}!");
+                break;
+            };
+
+            // Add to tries
+            t++;
+
+            // Error handling
+            try
+            {
+                forecast = await ProcessDataAsync<WeatherForecast>(client, weatherApiLink);
+                if (forecast == null)
+                {
+                    Console.WriteLine("Request to retrieve 24-hour weather forecast returned null. Retrying...");
+                    continue;
+                }
+                else if (forecast.code != 0)
+                {
+                    Console.WriteLine("Error occured trying to retrieve 24-hour weather forecast. Retrying...");
+                    Console.WriteLine("API Code: " + forecast.code);
+                    continue;
+                }
+                break;
+            }
+            catch (Exception er)
+            {
+                Console.WriteLine("Error occured trying to retrieve 24-hour weather forecast. Retrying...");
+                Console.WriteLine("Error Type: " + er);
+                continue;
+            }
+        }
+
+        // Final error messages
+        if (forecast == null)
+        {
+            Console.WriteLine("! WARNING !");
+            Console.WriteLine("Request to retrieve 24-hour weather forecast returned null");
+            Console.WriteLine("! WARNING !");
+            return null;
+        }
+        else if (forecast.code != 0)
+        {
+            Console.WriteLine("! WARNING !");
+            Console.WriteLine("Error occured trying to retrieve 24-hour weather forecast.");
+            Console.WriteLine("Error Message: " + forecast.errorMsg);
+            Console.WriteLine("! WARNING !");
+            return null;
+        }
+        else
+        {
+            Console.WriteLine("24-Hour weather forecast loaded!");
+            return forecast;
+        }
+    }
+
+    // UTILITY
+    private static Period[] GetPeriods(WeatherForecast forecast)
+    {
+        return forecast.data.records[0].periods;
+    }
+
+    // Returns a number depending on the severity of the weather
+    //  Normal weather  - 0
+    //  Slightly Heavy  - 1
+    //  Very Heavy      - 2
+    // Depending on severity, should cancel/delay flights
+    private static int GetWeatherSeverity(Terminal t5, Weather weather)
+    {
+        return
+            t5.WeathersToCancel.Contains(weather.text) ? 2 :
+            t5.WeathersToDelay.Contains(weather.text) ? 1 :
+            0;
+    }
+
+    // Returns the maximum severity for the period
+    private static int GetWeatherSeverityFromRegions(Terminal t5, Regions regions)
+    {
+        int[] severityArr = new int[] {
+            GetWeatherSeverity(t5, regions.west),
+            GetWeatherSeverity(t5, regions.east),
+            GetWeatherSeverity(t5, regions.central),
+            GetWeatherSeverity(t5, regions.south),
+            GetWeatherSeverity(t5, regions.north)
+        };
+        return severityArr.Max();
+    }
+
+    private static DateTime PromptDateTime(string msg, DateTime? minDate = null)
+    {
+        DateTime flightDateTime;
+        string myDateTimeInput = "";
+        while (true)
+        {
+            try
+            {
+                // Prompt new Expected Departure/ Arrival Time (dd/mm/yyyy hh:mm)
+                Console.WriteLine(msg);
+                myDateTimeInput = Console.ReadLine() ?? "";
+                flightDateTime = Convert.ToDateTime(myDateTimeInput); 
+
+                // Reprompt if mindate and input is below mindate
+                if (minDate != null && flightDateTime < minDate)
+                {
+                    Console.WriteLine($"Time cannot be before {minDate.ToString()}");
+                    continue;
+                }
+
+                return flightDateTime;
+            }
+            // check if input is Date Time
+            catch (FormatException) { Console.WriteLine($"The string {myDateTimeInput} is not a valid Date Time."); }
+            // checks for additional errors
+            catch (Exception exception) { Console.WriteLine(exception.Message); }
+        }
+    }
+
+    // MAIN
+    private static void LoadWeathersToDelay(Terminal t5)
+    {
+        using (StreamReader sr = new StreamReader(delayWeatherFileName))
+        {
+            string? line;
+            while ((line = sr.ReadLine()) != null)
+            {
+                t5.WeathersToDelay.Add(line.Trim());
+            }
+        }
+        Console.WriteLine("Weathers to delay loaded!");
+    }
+    private static void LoadWeathersToCancel(Terminal t5)
+    {
+        using (StreamReader sr = new StreamReader(cancelWeatherFileName))
+        {
+            string? line;
+            while ((line = sr.ReadLine()) != null)
+            {
+                t5.WeathersToCancel.Add(line.Trim());
+            }
+        }
+        Console.WriteLine("Weathers to cancel loaded!");
+    }
+
+    // Handles prompting of flight cancellation
+    private static void HandleRescheduledFlights(Terminal t5, List<DateTime[]> timeRangeList, bool cancel = false)
+    {
+        // Returns if there is no time ranges
+        if (timeRangeList.Count == 0) return;
+
+        // Define action at the start to reuse
+        Func<DateTime, DateTime, int> handleFlight = (start, end) => cancel ? BulkCancelFlights(t5, start, end) : BulkRescheduleFlights(t5, start, end, end);
+
+        // Count the amount of flights affected
+        int count = 0;
+
+        string option;
+        if (timeRangeList.Count == 1)
+        {
+            DateTime start = timeRangeList[0][0];
+            DateTime end = timeRangeList[0][1];
+            option = ValidateInputFrom(
+                new string[] { "y", "n" },
+                $"Would you like to {(cancel?"cancel":"delay")} the flights between {start} and {end}? (Y/N)",
+                casing: -1);
+
+            if (option == "y")
+            {
+                count = handleFlight(start, end);
+            }
+        }
+        else if (timeRangeList.Count > 1)
+        {
+            List<string> options = new List<string> { "-1", "0" };
+
+            Console.WriteLine($"Which time ranges would you like to {(cancel?"cancel":"delay")} flights in?");
+            // Loop through and print the time ranges
+            for (int i = 0; i < timeRangeList.Count; i++)
+            {
+                DateTime start = timeRangeList[i][0];
+                DateTime end = timeRangeList[i][1];
+                Console.WriteLine($"{i + 1}. {start} - {end}");
+                options.Add((i + 1).ToString().Trim());
+            }
+            Console.WriteLine("0. All");
+            Console.WriteLine("-1. None");
+
+            option = ValidateInputFrom(options);
+
+            switch (option)
+            {
+                // For none
+                case "-1":
+                    break;
+
+                // For all time ranges
+                case "0":
+                    foreach (DateTime[] loopTimeRanges in timeRangeList)
+                    {
+                        count += handleFlight(loopTimeRanges[0], loopTimeRanges[1]);
+                    }
+                    break;
+
+                // For specific time range
+                default:
+                    DateTime[] timeRanges = timeRangeList[int.Parse(option) - 1];
+                    count = handleFlight(timeRanges[0], timeRanges[1]);
+                    break;
+            };
+        }
+
+        Console.WriteLine($"{count} flight{((count == 1) ? "" : "s")} have been {(cancel ? "cancelled" : "delayed")}!");
+    }
+
+    private static void CheckWeatherCondition(Terminal t5)
+    {
+        List<DateTime[]> delayTimes = new List<DateTime[]>();
+        List<DateTime[]> cancelTimes = new List<DateTime[]>();
+
+        // Stores the time in DateTime array pairs in which user is prompted to delay or cancel flights
+        //  In each list:
+        //      new DateTime[] {
+        //          start,
+        //          end
+        //      }
+        foreach (Period period in GetPeriods(t5.WeatherForecast!))
+        {
+            Timeperiod time = period.timePeriod;
+            Regions regions = period.regions;
+
+            int severity = GetWeatherSeverityFromRegions(t5, period.regions);
+            if (severity == 2)
+            {
+                cancelTimes.Add(new DateTime[] {
+                    Convert.ToDateTime(time.start),
+                    Convert.ToDateTime(time.end)
+                });
+            }
+            else if (severity == 1)
+            {
+                delayTimes.Add(new DateTime[] {
+                    Convert.ToDateTime(time.start),
+                    Convert.ToDateTime(time.end)
+                });
+            }
+        }
+
+        // Return if there is no heavy weather
+        if (delayTimes.Count == 0 && cancelTimes.Count == 0) return;
+
+        Console.WriteLine();
+        Console.WriteLine("!!! NOTICE !!!");
+        Console.Write("There will be ");
+        if (delayTimes.Count > 0) Console.Write($"{delayTimes.Count} occurance{((delayTimes.Count == 1) ? "" : "s")} of slightly heavy weather");
+        if (delayTimes.Count > 0 && cancelTimes.Count > 0) Console.Write(" and ");
+        if (cancelTimes.Count > 0) Console.Write($"{cancelTimes.Count} occurance{((delayTimes.Count == 1) ? "" : "s")} of very heavy weather");
+        Console.WriteLine();
+
+        // Format the prompt string to make it sound right
+        string promptMsg = "Would you like to {0}{1}{2} flights during those times? (Y/N) ";
+        promptMsg = string.Format(promptMsg,
+            (delayTimes.Count > 0) ? "reschedule" : "",
+            (delayTimes.Count > 0 && cancelTimes.Count > 0) ? "/" : "",
+            (cancelTimes.Count > 0) ? "cancel" : "");
+
+        string option = ValidateInputFrom(
+            new string[] { "y", "n" },
+            promptMsg,
+            casing: -1);
+
+        // Return if option is no
+        if (option == "n") return;
+
+        // DELAYING
+        HandleRescheduledFlights(t5, delayTimes);
+
+        // CANCELLATION
+        HandleRescheduledFlights(t5, cancelTimes, true);
+    }
+
+    private static void DisplayWeather(Terminal t5)
+    {
+        if (t5.WeatherForecast == null)
+        {
+            Console.WriteLine("Weather forecast cannot be currently viewed!");
+            return;
+        }
+
+        Console.WriteLine(
+          "=============================================  \r\n" +
+          "24-Hour Weather Forecast  \r\n" +
+          "=============================================");
+
+        Period[] periods = GetPeriods(t5.WeatherForecast);
+        string format = "{0,-15}{1,-25}{2}";
+
+        // Loop through periods array and print the periods
+        foreach (Period period in periods)
+        {
+            Regions regions = period.regions;
+            Weather west = regions.west;
+            Weather east = regions.east;
+            Weather central = regions.central;
+            Weather south = regions.south;
+            Weather north = regions.north;
+
+            Console.WriteLine("\t" + period.timePeriod.text);
+
+            Console.WriteLine(format, "Region", "Weather", "Code");
+            Console.WriteLine(format, "West", west.text, west.code);
+            Console.WriteLine(format, "East", east.text, east.code);
+            Console.WriteLine(format, "Central", central.text, central.code);
+            Console.WriteLine(format, "South", south.text, south.code);
+            Console.WriteLine(format, "North", north.text, north.code);
+
+            Console.WriteLine();
+        }
+
+        CheckWeatherCondition(t5);
+    }
+
+    // Gets the flights that depart within those times and changes their time to the new schedule
+    // Returns the amount of flights rescheduled
+    private static int BulkRescheduleFlights(Terminal t5, DateTime start, DateTime end, DateTime newTime)
+    {
+        int count = 0;
+        foreach (Flight flight in t5.Flights.Values)
+        {
+            if (flight.ExpectedTime >= start && flight.ExpectedTime <= end)
+            {
+                flight.ExpectedTime = newTime;
+                count++;
+            }
+        }
+        return count;
+    }
+
+    // Prompts a starting time and ending time
+    // Gets the flights that depart within those times
+    // Prompts the amount of time to delay by
+    private static void PromptBulkRescheduleFlights(Terminal t5)
+    {
+        Console.WriteLine(
+          "=============================================  \r\n" +
+          "Bulk Reschedule Flights                        \r\n" +
+          "=============================================");
+
+        DateTime start = PromptDateTime("Enter starting time (dd/MM/yyyy HH:mm): ");        
+        DateTime end = PromptDateTime("Enter ending time (dd/MM/yyyy HH:mm): ", start);        
+        DateTime newTime = PromptDateTime("Enter new time (dd/MM/yyyy HH:mm): ", end);
+
+        int count = BulkRescheduleFlights(t5, start, end, newTime);
+
+        Console.WriteLine($"{count} flight{((count == 1) ? "" : "s")} have been delayed to {newTime}!");
+    }
+
+    private static void CancelFlight(Terminal t5, Flight flight)
+    {
+        Airline airline = t5.GetAirlineFromFlight(flight);
+        BoardingGate? boardingGate = GetFlightBoardingGate(t5, flight);
+
+        airline.RemoveFlight(flight);
+        if (boardingGate != null)
+        {
+            boardingGate.Flight = null;
+        }
+        
+        t5.Flights.Remove(flight.FlightNumber);
+    }
+
+    private static void PromptCancelFlight(Terminal t5)
+    {
+        Console.WriteLine(
+          "=============================================  \r\n" +
+          "Cancel Flight                                  \r\n" +
+          "=============================================");
+        
+        Flight flight = t5.Flights[ValidateInputFrom(t5.Flights.Keys, "Enter Flight Number:", "Invalid Flight Number!")];
+
+        Console.WriteLine($"Flight {flight.FlightNumber} has been cancelled!");
+        CancelFlight(t5, flight);
+    }
+
+    private static int BulkCancelFlights(Terminal t5, DateTime start, DateTime end)
+    {
+        int count = 0;
+        foreach (Flight flight in t5.Flights.Values)
+        {
+            if (flight.ExpectedTime >= start && flight.ExpectedTime <= end)
+            {
+                CancelFlight(t5 , flight);
+                count++;
+            }
+        }
+        return count;
+    }
+
+    private static void PromptBulkCancelFlights(Terminal t5)
+    {
+        Console.WriteLine(
+          "=============================================  \r\n" +
+          "Bulk Cancel Flight                                  \r\n" +
+          "=============================================");
+
+        DateTime start = PromptDateTime("Enter starting time (dd/MM/yyyy HH:mm): ");
+        DateTime end = PromptDateTime("Enter ending time (dd/MM/yyyy HH:mm): ", start);
+
+        int count = BulkCancelFlights(t5, start, end);
+
+        Console.WriteLine($"{count} flight{((count == 1) ? "" : "s")} have been cancelled!");
+    }
+
+    // MAIN FUNC // 
+    private static async Task Main(string[] args)
     {
         Terminal t5 = new Terminal("Terminal5");
+        LoadWeathersToDelay(t5);
+        LoadWeathersToCancel(t5);
+
+        // Try to retrieve the forecast.
+        // If no forecast retrieved, warn the user
+        // Then, set Terminal 5's weather
+        t5.WeatherForecast = await GetWeatherAPI();
+
+        // !! DEBUG TESTING !!
+        // Uncomment to test if heavy weather actually delays?
+        //GetPeriods(t5.WeatherForecast!)[0].regions.west.text = "Heavy Showers";
+        //GetPeriods(t5.WeatherForecast!)[0].regions.east.text = "Heavy Thundery Showers";
 
         // Load the Airlines
         LoadAirlines(t5);

@@ -15,6 +15,12 @@
     <None Update="Data\boardinggates.csv">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Data\weathersToCancel.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Data\weathersToDelay.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Data\flights.csv">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
