@@ -3,10 +3,15 @@
 // Student Name	    : Moh Journ Haydn
 // Partner Name	    : Low Yu Wen Max
 //==========================================================
-// Low Yu Wen Max -Bonus: 
+// Moh Journ Haydn
+// Completed: Basic (2,3,5,6,9) & Advanced (b)
+// -Bonus: To be added.
+
+// Low Yu Wen Max
+// Completed: Basic (1,4,7,8) & Advanced (a)
+// -Bonus: GITHUB Semver
 
 
-// Moh Journ Haydn -Bonus: 
 using Microsoft.VisualBasic.FileIO;
 using PRG2_T13_03;
 using PRG2_T13_03.Classes;
