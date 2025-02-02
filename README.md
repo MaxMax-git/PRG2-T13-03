@@ -1,6 +1,7 @@
 <a id="readme-top"></a>
 
 # Flight Information Display System (FIDS) - Terminal 5
+[![Contributors][contributors-shield]][contributors-url]
 ![.NET Version](https://img.shields.io/badge/.NET-6.0-blueviolet)
 ![License](https://img.shields.io/badge/License-MIT-green)
 A C# console application for managing flight data, boarding gate assignments, and terminal fees at Changi Airport Terminal 5.
@@ -19,10 +20,10 @@ City of Origin or Destination, Expected Departure/Arrival Time, and Flight Statu
 ## Table of Contents
 - [Features](#features)
 - [Class Diagram](#class-diagram)
-- [Installation & Usage](#installation--usage)
+- [Installation](#installation)
+- [Usage](#usage)
 - [Data Files](#data-files)
 - [Team Contributions](#team-contributions)
-- [Grading Criteria](#grading-criteria)
 - [License](#license)
 
 ## Features
@@ -51,22 +52,21 @@ City of Origin or Destination, Expected Departure/Arrival Time, and Flight Statu
 - Terminal.cs
 - BoardingGate.cs
 - Airline.cs
-- Flight.cs
+- Flight.cs (Parent Class)
   - NORMFlight
   - LWTTFlight
   - DDJBFlight
   - CFFTFlight
+- WeatherAPI.cs
 
  <p align="right">(<a href="#readme-top">back to top</a>)</p>
  
-## Installation & Usage 
+## Installation
 
-### Installation
-
-#### Prerequisites
+### Prerequisites
 - [.NET 6.0 SDK](https://dotnet.microsoft.com/download)
 
-#### Setup
+### Setup
 ```bash
 # Clone repository
 git clone https://github.com/[your-username]/[your-repo-name].git
@@ -78,12 +78,54 @@ cd [your-repo-name]/src
 dotnet restore
 
 # IMPORTANT: Ensure that required CSV data files are in the DATA Folder.
-# CSV Files Need: airlines.csv , boardinggates.csv, flights.csv
+# CSV Files Need: airlines.csv , boardinggates.csv, flights.csv, weathersToCancel.csv, weathersToDelay.csv
 # If missing, download or copy them into the "Data" folder
 
 # Run application
 dotnet run
 ```
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## Usage
+### Main Menu Overview
+
+When you run the application, you’ll see the following menu:  
+*(Options are selected by entering the corresponding number.)*
+
+```text
+=============================================
+Welcome to Changi Airport Terminal 5
+=============================================
+1. List All Flights
+2. List Boarding Gates
+3. Assign a Boarding Gate to a Flight
+4. Create Flight
+5. Display Airline Flights
+6. Modify Flight Details
+7. Display Flight Schedule
+8. Process All Unassigned Flights
+9. Display Total Fee Per Airline For the Day
+10. Display 24-hour Weather Forecast
+11. Bulk Reschedule Flights
+12. Cancel Flight
+13. Bulk Cancel Flights
+0. Exit
+
+Please select your option:
+```
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## Data Files
+There a total of 5 CSV Data Files needed to run this program. They are found in the "Data" Folder.
+- airlines.csv
+- boardinggates.csv
+- flights.csv
+- weathersToCancel.csv
+- weathersToDelay.csv
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Team Contributions
 Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
@@ -102,6 +144,11 @@ Don't forget to give the project a star! Thanks again!
   <img src="https://contrib.rocks/image?repo=MaxMax-git/PRG2-T13-03"alt="Contributors" />
 </a>
 
+### Authors
+Low Yu Wen Max (S10266723)
+
+Moh Journ Haydn (S10267518J)
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## License
@@ -109,3 +156,8 @@ Don't forget to give the project a star! Thanks again!
 Distributed under the MIT License. See `LICENSE.txt` for more information.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+<!-- MARKDOWN LINKS & IMAGES -->
+<!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
+[contributors-shield]: https://img.shields.io/github/contributors/MaxMax-git/PRG2-T13-03.svg?style=for-the-badge
+[contributors-url]: https://github.com/MaxMax-git/PRG2-T13-03/graphs/contributors
