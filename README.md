@@ -96,20 +96,19 @@ When you run the application, you’ll see the following menu:
 =============================================
 Welcome to Changi Airport Terminal 5
 =============================================
-1. List All Flights
-2. List Boarding Gates
-3. Assign a Boarding Gate to a Flight
-4. Create Flight
-5. Display Airline Flights
-6. Modify Flight Details
-7. Display Flight Schedule
-8. Process All Unassigned Flights
-9. Display Total Fee Per Airline For the Day
+1.  List All Flights
+2.  List Boarding Gates
+3.  Assign a Boarding Gate to a Flight
+4.  Create Flight
+5.  Display Airline Flights
+6.  Modify Flight Details
+7.  Display Flight Schedule
+8.  Process All Unassigned Flights
+9.  Display Total Fee Per Airline For the Day
 10. Display 24-hour Weather Forecast
 11. Bulk Reschedule Flights
-12. Cancel Flight
-13. Bulk Cancel Flights
-0. Exit
+12. Bulk Cancel Flights
+0.  Exit
 
 Please select your option:
 ```
