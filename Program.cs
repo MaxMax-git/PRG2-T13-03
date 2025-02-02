@@ -126,6 +126,28 @@ class Program
         return (boardingGate != null) ? boardingGate.GateName : "Unassigned";
     }
 
+    // CheckFileExist(string fileName) 
+    //  method returns true -> error or false -> no error
+    private static bool CheckFileExist(string fileName)
+    {
+        bool error = false;
+        try
+        {
+            string[] airlineLines = File.ReadAllLines(fileName); // Read all lines from csv file
+        }
+        catch (FileNotFoundException)
+        {
+            Console.WriteLine($"Error: File {fileName} not found.");
+            error = true;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"An error occurred while loading airlines: {ex.Message}");
+            error = true;
+        }
+        return error;
+    }
+
     // PART 1 //
 
     // pt1. -> Load the airlines.csv file.
@@ -1587,17 +1609,35 @@ class Program
         //GetPeriods(t5.WeatherForecast!)[0].regions.west.text = "Heavy Showers";
         //GetPeriods(t5.WeatherForecast!)[0].regions.east.text = "Heavy Thundery Showers";
 
+        // Check for any missing files
+        bool proceedLoadAirlines = !CheckFileExist(airlineFileName);
+        bool proceedLoadBoardingGates = !CheckFileExist(boardingGateFileName);
+        bool proceedLoadFlights = !CheckFileExist(flightsFileName);
+
         // Load the Airlines
-        LoadAirlines(t5);
+        if (proceedLoadAirlines) // proceed if no error
+        {
+            LoadAirlines(t5);
+        }
 
         // Load the Boarding Gates
-        LoadBoardingGates(t5);
+        if (proceedLoadBoardingGates)
+        {
+            LoadBoardingGates(t5);
+        }
 
         // Load flights
-        LoadFlights(t5);
+        if (proceedLoadFlights)
+        {
+            LoadFlights(t5);
+        }
+
+        // Condition to start program: No Missing Files
+        bool start = proceedLoadAirlines && proceedLoadBoardingGates && proceedLoadFlights;
+        if (!start) { Console.WriteLine("Error. Missing Files detected"); }
 
         // Program start
-        while (true)
+        while (start) // does not start program if missing files
         {
             Console.Write("\n\n\n\n");
             string option = ShowMenu();
