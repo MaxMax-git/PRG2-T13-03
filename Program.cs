@@ -1596,8 +1596,22 @@ class Program
     private static async Task Main(string[] args)
     {
         Terminal t5 = new Terminal("Terminal5");
-        LoadWeathersToDelay(t5);
-        LoadWeathersToCancel(t5);
+
+        // Check for any missing files
+        bool proceedLoadDelayWeathers = !CheckFileExist(delayWeatherFileName);
+        bool proceedLoadCancelWeathers = !CheckFileExist(cancelWeatherFileName);
+        bool proceedLoadAirlines = !CheckFileExist(airlineFileName);
+        bool proceedLoadBoardingGates = !CheckFileExist(boardingGateFileName);
+        bool proceedLoadFlights = !CheckFileExist(flightsFileName);
+        bool loaded = 
+            proceedLoadDelayWeathers &&
+            proceedLoadCancelWeathers && 
+            proceedLoadAirlines && 
+            proceedLoadBoardingGates && 
+            proceedLoadFlights;
+
+        if (proceedLoadDelayWeathers) LoadWeathersToDelay(t5);
+        if (proceedLoadCancelWeathers) LoadWeathersToCancel(t5);
 
         // Try to retrieve the forecast.
         // If no forecast retrieved, warn the user
@@ -1608,11 +1622,6 @@ class Program
         // Uncomment to test if heavy weather actually delays?
         //GetPeriods(t5.WeatherForecast!)[0].regions.west.text = "Heavy Showers";
         //GetPeriods(t5.WeatherForecast!)[0].regions.east.text = "Heavy Thundery Showers";
-
-        // Check for any missing files
-        bool proceedLoadAirlines = !CheckFileExist(airlineFileName);
-        bool proceedLoadBoardingGates = !CheckFileExist(boardingGateFileName);
-        bool proceedLoadFlights = !CheckFileExist(flightsFileName);
 
         // Load the Airlines
         if (proceedLoadAirlines) // proceed if no error
@@ -1633,11 +1642,10 @@ class Program
         }
 
         // Condition to start program: No Missing Files
-        bool start = proceedLoadAirlines && proceedLoadBoardingGates && proceedLoadFlights;
-        if (!start) { Console.WriteLine("Error. Missing Files detected"); }
+        if (!loaded) { Console.WriteLine("Error: Missing Files detected"); }
 
         // Program start
-        while (start) // does not start program if missing files
+        while (loaded) // does not start program if missing files
         {
             Console.Write("\n\n\n\n");
             string option = ShowMenu();
