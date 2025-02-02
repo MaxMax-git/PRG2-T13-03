@@ -58,6 +58,32 @@ City of Origin or Destination, Expected Departure/Arrival Time, and Flight Statu
   - CFFTFlight
 
  <p align="right">(<a href="#readme-top">back to top</a>)</p>
+ 
+## Installation & Usage 
+
+### Installation
+
+#### Prerequisites
+- [.NET 6.0 SDK](https://dotnet.microsoft.com/download)
+
+#### Setup
+```bash
+# Clone repository
+git clone https://github.com/[your-username]/[your-repo-name].git
+
+# Navigate to project directory
+cd [your-repo-name]/src
+
+# Restore dependencies
+dotnet restore
+
+# IMPORTANT: Ensure that required CSV data files are in the DATA Folder.
+# CSV Files Need: airlines.csv , boardinggates.csv, flights.csv
+# If missing, download or copy them into the "Data" folder
+
+# Run application
+dotnet run
+```
 
 ## Team Contributions
 Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
@@ -71,6 +97,7 @@ Don't forget to give the project a star! Thanks again!
 4. Push to the Branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
+### Contributors
 <a href="https://github.com/MaxMax-git/PRG2-T13-03/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=MaxMax-git/PRG2-T13-03"alt="Contributors" />
 </a>
