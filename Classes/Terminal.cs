@@ -18,7 +18,9 @@ namespace PRG2_T13_03.Classes
         public Dictionary<string, Flight> Flights { get; set; } = new Dictionary<string, Flight>();
         public Dictionary<string, BoardingGate> BoardingGates { get; set; } = new Dictionary<string, BoardingGate>();
         public Dictionary<string, double> GateFees { get; set; } = new Dictionary<string, double>();
-
+        public WeatherForecast? WeatherForecast { get; set; }
+        public List<string> WeathersToDelay { get; set; } = new List<string>();
+        public List<string> WeathersToCancel { get; set; } = new List<string>();
 
         // Methods
         public bool AddAirline(Airline airline)
