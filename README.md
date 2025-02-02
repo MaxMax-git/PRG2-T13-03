@@ -1,7 +1,6 @@
 <a id="readme-top"></a>
 
 # Flight Information Display System (FIDS) - Terminal 5
-[![Contributors][contributors-shield]][contributors-url]
 ![.NET Version](https://img.shields.io/badge/.NET-6.0-blueviolet)
 ![License](https://img.shields.io/badge/License-MIT-green)
 A C# console application for managing flight data, boarding gate assignments, and terminal fees at Changi Airport Terminal 5.
@@ -157,7 +156,4 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-<!-- MARKDOWN LINKS & IMAGES -->
-<!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[contributors-shield]: https://img.shields.io/github/contributors/MaxMax-git/PRG2-T13-03.svg?style=for-the-badge
-[contributors-url]: https://github.com/MaxMax-git/PRG2-T13-03/graphs/contributors
+
