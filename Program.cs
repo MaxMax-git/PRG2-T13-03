@@ -307,20 +307,20 @@ class Program
             "=============================================              \r\n" +
             "Welcome to Changi Airport Terminal 5                       \r\n" +
             "=============================================              \r\n" +
-            "1. List All Flights                                        \r\n" +
-            "2. List Boarding Gates                                     \r\n" +
-            "3. Assign a Boarding Gate to a Flight                      \r\n" +
-            "4. Create Flight                                           \r\n" +
-            "5. Display Airline Flights                                 \r\n" +
-            "6. Modify Flight Details                                   \r\n" +
-            "7. Display Flight Schedule                                 \r\n" +
-            "8. Process All Unassigned Flights                          \r\n" +
-            "9. Display Total Fee Per Airline For the Day               \r\n" +
+            "1.  List All Flights                                        \r\n" +
+            "2.  List Boarding Gates                                     \r\n" +
+            "3.  Assign a Boarding Gate to a Flight                      \r\n" +
+            "4.  Create Flight                                           \r\n" +
+            "5.  Display Airline Flights                                 \r\n" +
+            "6.  Modify Flight Details                                   \r\n" +
+            "7.  Display Flight Schedule                                 \r\n" +
+            "8.  Process All Unassigned Flights                          \r\n" +
+            "9.  Display Total Fee Per Airline For the Day               \r\n" +
             "10. Display 24-hour Weather Forecast                       \r\n" +
             "11. Bulk Reschedule Flights                                \r\n" +
             "12. Cancel Flight                                          \r\n" +
             "13. Bulk Cancel Flights                                    \r\n" +
-            "0. Exit                                                    \r\n");
+            "0.  Exit                                                    \r\n");
 
         // Prompts the user for an option,
         // reprompting if the value is not 0-7
