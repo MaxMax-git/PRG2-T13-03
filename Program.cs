@@ -289,8 +289,7 @@ class Program
         {"9", t => DisplayAirlineFees(t)},
         {"10", t => DisplayWeather(t)},
         {"11", t => PromptBulkRescheduleFlights(t)},
-        {"12", t => PromptCancelFlight(t)},
-        {"13", t => PromptBulkCancelFlights(t)},
+        {"12", t => PromptBulkCancelFlights(t)},
         {"0", t => {
             Console.Write("Goodbye!");
             Environment.Exit(0);
@@ -318,8 +317,7 @@ class Program
             "9.  Display Total Fee Per Airline For the Day               \r\n" +
             "10. Display 24-hour Weather Forecast                       \r\n" +
             "11. Bulk Reschedule Flights                                \r\n" +
-            "12. Cancel Flight                                          \r\n" +
-            "13. Bulk Cancel Flights                                    \r\n" +
+            "12. Bulk Cancel Flights                                    \r\n" +
             "0.  Exit                                                    \r\n");
 
         // Prompts the user for an option,
@@ -1541,19 +1539,6 @@ class Program
         }
         
         t5.Flights.Remove(flight.FlightNumber);
-    }
-
-    private static void PromptCancelFlight(Terminal t5)
-    {
-        Console.WriteLine(
-          "=============================================  \r\n" +
-          "Cancel Flight                                  \r\n" +
-          "=============================================");
-        
-        Flight flight = t5.Flights[ValidateInputFrom(t5.Flights.Keys, "Enter Flight Number:", "Invalid Flight Number!")];
-
-        Console.WriteLine($"Flight {flight.FlightNumber} has been cancelled!");
-        CancelFlight(t5, flight);
     }
 
     private static int BulkCancelFlights(Terminal t5, DateTime start, DateTime end)
