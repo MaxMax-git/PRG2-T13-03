@@ -476,19 +476,23 @@ class Program
         }
     }
 
-    private static string PromptLocation(string locationString, bool specifyNew = false)
+    private static string PromptLocation(string locationString, bool specifyNew = false, string? previousLocation = null)
     {
         string? location = null;
         while (true)
         {
             Console.Write($"Enter{(specifyNew ? " new " : " ")}{locationString}: ");
-            location = Console.ReadLine() ?? "";
+            location = (Console.ReadLine() ?? "").Trim();
 
             // Warn if empty
             if (string.IsNullOrEmpty(location)) Console.WriteLine($"{locationString} cannot be empty!");
 
             // Warn if origin not in correct format
-            if (!Regex.IsMatch(location, @"^[A-Za-z\s]+ \([A-Za-z]{3}\)$")) Console.WriteLine($"{locationString} must follow the format! e.g. Singapore (SIN)");
+            else if (!Regex.IsMatch(location, @"^[A-Za-z\s]+ \([A-Za-z]{3}\)$")) Console.WriteLine($"{locationString} must follow the format! e.g. Singapore (SIN)");
+            
+            // Warn if same as previous
+            else if (previousLocation != null && location.ToLower() == previousLocation.ToLower()) Console.WriteLine($"{locationString} cannot be {previousLocation}!");
+
             else return (location.ToUpper()[0] + location[1..^5].ToLower() + location[^5..].ToUpper()); // Proper capitalizations
         }
     }
@@ -528,7 +532,7 @@ class Program
             // Prompt for flight info
             string flightNo = PromptNewFlightNumber(t5);
             string origin = PromptLocation("Origin");
-            string destination = PromptLocation("Destination");
+            string destination = PromptLocation("Destination", previousLocation: origin);
             DateTime expectedTime = PromptExpectedTime();
 
             // Constructor dictionary reference
